@@ -1,1 +1,1190 @@
-<h1>Hola MUNDO</h1>
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Sala Situacional — Control de Malaria · EC.10</title>
+<link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+<style>
+:root {
+  --bg0:#07090f;
+  --bg1:#0d1117;
+  --bg2:#131c2e;
+  --bg3:#1a2540;
+  --bg4:#1e2d4a;
+  --accent:#00d4ff;
+  --accent2:#0099cc;
+  --accent-dim:rgba(0,212,255,0.08);
+  --accent-glow:rgba(0,212,255,0.25);
+  --red:#ff4d6d;
+  --red-dim:rgba(255,77,109,0.1);
+  --amber:#ffb84d;
+  --amber-dim:rgba(255,184,77,0.1);
+  --green:#3dffa0;
+  --green-dim:rgba(61,255,160,0.08);
+  --purple:#a78bfa;
+  --purple-dim:rgba(167,139,250,0.1);
+  --text:#c9d5e8;
+  --text2:#7a90b0;
+  --text3:#3d5275;
+  --border:rgba(0,212,255,0.1);
+  --border2:rgba(0,212,255,0.22);
+  --mono:'Space Mono',monospace;
+  --sans:'DM Sans',sans-serif;
+  --shadow:0 4px 24px rgba(0,0,0,0.5);
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+html{scroll-behavior:smooth;}
+body{background:var(--bg0);color:var(--text);font-family:var(--sans);font-size:13px;min-height:100vh;overflow-x:hidden;}
+
+/* ─── SCANLINE OVERLAY ─── */
+body::before{content:'';position:fixed;inset:0;background:repeating-linear-gradient(0deg,transparent,transparent 2px,rgba(0,0,0,0.03) 2px,rgba(0,0,0,0.03) 4px);pointer-events:none;z-index:9999;}
+
+/* ─── HEADER ─── */
+.hdr{position:sticky;top:0;z-index:200;background:rgba(7,9,15,0.95);backdrop-filter:blur(12px);border-bottom:1px solid var(--border2);display:flex;align-items:center;justify-content:space-between;padding:0 18px;height:52px;}
+.hdr-brand{display:flex;align-items:center;gap:12px;}
+.hdr-icon{width:34px;height:34px;border:1px solid var(--border2);border-radius:6px;background:var(--accent-dim);display:flex;align-items:center;justify-content:center;font-family:var(--mono);font-size:13px;font-weight:700;color:var(--accent);letter-spacing:-1px;}
+.hdr-name{font-family:var(--mono);font-size:12px;font-weight:700;color:var(--accent);letter-spacing:1px;}
+.hdr-sub{font-size:10px;color:var(--text3);letter-spacing:.5px;margin-top:1px;}
+.hdr-center{display:flex;gap:2px;}
+.hdr-tab{padding:6px 14px;font-family:var(--mono);font-size:10px;font-weight:700;color:var(--text3);cursor:pointer;border:none;background:none;border-radius:4px;letter-spacing:.5px;transition:all .2s;position:relative;}
+.hdr-tab::after{content:'';position:absolute;bottom:-1px;left:0;right:0;height:2px;background:var(--accent);opacity:0;transition:.2s;}
+.hdr-tab.active{color:var(--accent);}
+.hdr-tab.active::after{opacity:1;}
+.hdr-tab:hover:not(.active){color:var(--text2);background:var(--accent-dim);}
+.hdr-right{display:flex;align-items:center;gap:10px;}
+.live-time{font-family:var(--mono);font-size:10px;color:var(--text3);}
+.alerta-pill{display:flex;align-items:center;gap:6px;background:var(--red-dim);border:1px solid rgba(255,77,109,.4);border-radius:20px;padding:4px 10px;font-family:var(--mono);font-size:10px;font-weight:700;color:var(--red);animation:pulse-red 2s infinite;}
+.alerta-dot{width:6px;height:6px;border-radius:50%;background:var(--red);animation:blink 1s infinite;}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:.15}}
+@keyframes pulse-red{0%,100%{box-shadow:0 0 0 0 rgba(255,77,109,.3)}50%{box-shadow:0 0 0 5px rgba(255,77,109,0)}}
+
+/* ─── TABS ─── */
+.tab-pane{display:none;}.tab-pane.active{display:block;}
+
+/* ─── MAIN LAYOUT ─── */
+.wrap{padding:12px 14px;}
+
+/* DASHBOARD 3-panel */
+.dash3{display:grid;grid-template-columns:270px 1fr 270px;gap:10px;align-items:start;}
+
+/* ─── PANEL ─── */
+.panel{background:var(--bg1);border:1px solid var(--border);border-radius:10px;overflow:hidden;display:flex;flex-direction:column;}
+.panel-hdr{display:flex;align-items:center;gap:8px;padding:8px 12px;background:var(--bg2);border-bottom:1px solid var(--border);}
+.panel-dot{width:7px;height:7px;border-radius:50%;flex-shrink:0;}
+.panel-hdr-title{font-family:var(--mono);font-size:9px;font-weight:700;letter-spacing:1.2px;text-transform:uppercase;color:var(--text3);}
+.panel-hdr-badge{margin-left:auto;font-family:var(--mono);font-size:9px;background:var(--bg0);border:1px solid var(--border);color:var(--text3);padding:1px 7px;border-radius:4px;}
+.panel-body{padding:10px 12px;flex:1;overflow-y:auto;max-height:calc(100vh - 120px);}
+.panel-body::-webkit-scrollbar{width:3px;}.panel-body::-webkit-scrollbar-thumb{background:var(--border2);border-radius:2px;}
+
+/* ─── SECTION LABEL ─── */
+.sec{font-family:var(--mono);font-size:8px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--text3);margin:10px 0 5px;display:flex;align-items:center;gap:6px;}
+.sec::after{content:'';flex:1;height:1px;background:var(--border);}
+
+/* ─── STAT ROW ─── */
+.sr{display:flex;justify-content:space-between;align-items:center;padding:4px 0;border-bottom:1px solid rgba(255,255,255,.025);}
+.sr-l{font-size:11px;color:var(--text2);}
+.sr-r{font-family:var(--mono);font-size:11px;font-weight:700;color:var(--text);}
+
+/* ─── METRIC CARDS ─── */
+.mc-grid{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin:6px 0;}
+.mc{background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:8px 10px;position:relative;overflow:hidden;}
+.mc::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;}
+.mc.blue::before{background:var(--accent);}
+.mc.red::before{background:var(--red);}
+.mc.amber::before{background:var(--amber);}
+.mc.green::before{background:var(--green);}
+.mc.purple::before{background:var(--purple);}
+.mc-label{font-size:9px;color:var(--text3);text-transform:uppercase;letter-spacing:.5px;margin-bottom:3px;}
+.mc-val{font-family:var(--mono);font-size:20px;font-weight:700;line-height:1.1;}
+.mc-sub{font-size:9px;color:var(--text3);margin-top:2px;}
+.mc-trend{font-family:var(--mono);font-size:9px;margin-top:2px;}
+.c-blue{color:var(--accent);}
+.c-red{color:var(--red);}
+.c-amber{color:var(--amber);}
+.c-green{color:var(--green);}
+.c-purple{color:var(--purple);}
+
+/* ─── BADGE ─── */
+.badge{display:inline-flex;align-items:center;gap:3px;padding:1px 7px;border-radius:4px;font-family:var(--mono);font-size:9px;font-weight:700;}
+.b-red{background:var(--red-dim);color:var(--red);border:1px solid rgba(255,77,109,.3);}
+.b-amber{background:var(--amber-dim);color:var(--amber);border:1px solid rgba(255,184,77,.3);}
+.b-green{background:var(--green-dim);color:var(--green);border:1px solid rgba(61,255,160,.3);}
+.b-blue{background:var(--accent-dim);color:var(--accent);border:1px solid var(--border2);}
+.b-purple{background:var(--purple-dim);color:var(--purple);border:1px solid rgba(167,139,250,.3);}
+
+/* ─── PROGRESS ─── */
+.prog{margin:5px 0;}
+.prog-top{display:flex;justify-content:space-between;margin-bottom:3px;}
+.prog-name{font-size:10px;color:var(--text2);}
+.prog-pct{font-family:var(--mono);font-size:10px;font-weight:700;}
+.prog-bar{height:5px;background:rgba(255,255,255,.05);border-radius:3px;overflow:hidden;}
+.prog-fill{height:100%;border-radius:3px;transition:width 1.4s cubic-bezier(.4,0,.2,1);}
+
+/* ─── ALERT BOX ─── */
+.abox{border-radius:8px;padding:8px 10px;margin:6px 0;border-left:3px solid;}
+.abox-red{background:var(--red-dim);border-color:var(--red);}
+.abox-amber{background:var(--amber-dim);border-color:var(--amber);}
+.abox-green{background:var(--green-dim);border-color:var(--green);}
+.abox-blue{background:var(--accent-dim);border-color:var(--accent);}
+.abox-purple{background:var(--purple-dim);border-color:var(--purple);}
+.abox-title{font-family:var(--mono);font-size:11px;font-weight:700;margin-bottom:3px;}
+.abox-red .abox-title{color:var(--red);}
+.abox-amber .abox-title{color:var(--amber);}
+.abox-green .abox-title{color:var(--green);}
+.abox-blue .abox-title{color:var(--accent);}
+.abox-purple .abox-title{color:var(--purple);}
+.abox-body{font-size:10px;color:var(--text2);line-height:1.6;}
+
+/* ─── PYRAMID ─── */
+.pyr{display:flex;align-items:center;gap:6px;margin:3px 0;}
+.pyr-lbl{font-family:var(--mono);font-size:9px;color:var(--text3);width:54px;text-align:right;}
+.pyr-track{flex:1;height:16px;background:rgba(255,255,255,.03);border-radius:3px;overflow:hidden;position:relative;}
+.pyr-fill{height:100%;border-radius:3px;display:flex;align-items:center;padding:0 6px;transition:width 1.5s ease;}
+.pyr-fill span{font-family:var(--mono);font-size:9px;font-weight:700;color:var(--bg0);white-space:nowrap;}
+
+/* ─── MAP TILES ─── */
+.map-grid{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin:6px 0;}
+.map-tile{border-radius:8px;padding:9px 10px;border:1px solid;cursor:pointer;transition:transform .18s,box-shadow .18s;position:relative;overflow:hidden;}
+.map-tile::after{content:'';position:absolute;inset:0;background:currentColor;opacity:.05;}
+.map-tile:hover{transform:translateY(-2px);box-shadow:var(--shadow);}
+.t-red{border-color:rgba(255,77,109,.35);color:var(--red);}
+.t-amber{border-color:rgba(255,184,77,.3);color:var(--amber);}
+.t-green{border-color:rgba(61,255,160,.25);color:var(--green);}
+.t-full{grid-column:1/-1;}
+.tile-nm{font-size:10px;font-weight:600;color:var(--text);margin-bottom:2px;}
+.tile-num{font-family:var(--mono);font-size:22px;font-weight:700;line-height:1;}
+.tile-inc{font-size:9px;color:var(--text3);margin-top:1px;}
+.tile-extra{font-size:9px;margin-top:4px;}
+.tile-detail-panel{border-radius:8px;padding:10px 12px;border:1px solid var(--border2);background:var(--bg2);margin-top:6px;display:none;animation:fadeUp .25s ease;}
+
+/* ─── TABLE ─── */
+.tbl{width:100%;border-collapse:collapse;font-size:10px;}
+.tbl th{font-family:var(--mono);font-size:8px;color:var(--text3);text-align:left;padding:5px 6px;border-bottom:1px solid var(--border);text-transform:uppercase;letter-spacing:.8px;}
+.tbl td{padding:6px 6px;border-bottom:1px solid rgba(255,255,255,.025);color:var(--text2);}
+.tbl tr:hover td{background:var(--accent-dim);}
+.tbl .mono{font-family:var(--mono);font-weight:700;color:var(--text);}
+
+/* ─── CHART WRAP ─── */
+.cw{position:relative;width:100%;}
+
+/* ─── SLIDER ─── */
+.slider-row{display:flex;align-items:center;gap:8px;margin:7px 0;}
+.slider-lbl{font-family:var(--mono);font-size:9px;color:var(--text3);white-space:nowrap;}
+input[type=range]{flex:1;height:4px;background:var(--border);border-radius:2px;outline:none;cursor:pointer;accent-color:var(--accent);}
+.slider-out{font-family:var(--mono);font-size:11px;font-weight:700;color:var(--accent);min-width:30px;text-align:right;}
+
+/* ─── FORMULA ACCORDION ─── */
+.fml-row{padding:5px 0;border-bottom:1px solid rgba(255,255,255,.025);cursor:pointer;}
+.fml-row:hover .fml-name{color:var(--accent);}
+.fml-head{display:flex;align-items:center;gap:6px;}
+.fml-ico{font-size:9px;color:var(--text3);width:10px;transition:.2s;}
+.fml-name{font-size:11px;color:var(--text2);}
+.fml-result{font-family:var(--mono);font-size:11px;font-weight:700;margin-left:auto;}
+.fml-body{font-family:var(--mono);font-size:9px;color:var(--text3);background:var(--bg0);border-radius:4px;padding:5px 8px;margin-top:4px;display:none;line-height:1.7;}
+.fml-body.open{display:block;}
+
+/* ─── FLOW ─── */
+.flow{display:flex;align-items:stretch;gap:4px;margin:8px 0;flex-wrap:wrap;}
+.flow-step{flex:1;min-width:70px;background:var(--bg2);border:1px solid var(--border);border-radius:7px;padding:8px 6px;text-align:center;cursor:pointer;transition:.2s;}
+.flow-step:hover,.flow-step.on{border-color:var(--accent);background:var(--accent-dim);}
+.flow-step .fs-num{font-family:var(--mono);font-size:16px;font-weight:700;color:var(--accent);}
+.flow-step .fs-lbl{font-size:8px;color:var(--text3);margin-top:2px;}
+.flow-arrow{color:var(--text3);font-size:10px;align-self:center;flex-shrink:0;}
+.flow-detail{background:var(--bg2);border:1px solid var(--border2);border-radius:8px;padding:10px 12px;margin-top:6px;font-size:10px;color:var(--text2);line-height:1.7;display:none;}
+.flow-detail.open{display:block;animation:fadeUp .2s ease;}
+
+/* ─── ACTIONS ─── */
+.act-item{display:flex;align-items:flex-start;gap:8px;padding:5px 0;border-bottom:1px solid rgba(255,255,255,.025);}
+.act-dot{width:6px;height:6px;border-radius:50%;flex-shrink:0;margin-top:4px;}
+.act-txt{font-size:10px;color:var(--text2);flex:1;line-height:1.5;}
+.act-tag{font-family:var(--mono);font-size:8px;font-weight:700;flex-shrink:0;padding:2px 6px;border-radius:4px;}
+
+/* ─── RESUMEN HEADER CARDS ─── */
+.kpi-row{display:grid;grid-template-columns:repeat(6,1fr);gap:8px;margin-bottom:10px;}
+.kpi{background:var(--bg1);border:1px solid var(--border);border-radius:8px;padding:8px 12px;text-align:center;}
+.kpi-v{font-family:var(--mono);font-size:18px;font-weight:700;line-height:1;}
+.kpi-l{font-size:9px;color:var(--text3);margin-top:3px;text-transform:uppercase;letter-spacing:.4px;}
+
+/* ─── TABS FULL-WIDTH PANELS ─── */
+.full-panel{background:var(--bg1);border:1px solid var(--border);border-radius:10px;overflow:hidden;margin-bottom:10px;}
+.fp-hdr{display:flex;align-items:center;gap:8px;padding:9px 14px;background:var(--bg2);border-bottom:1px solid var(--border);}
+.fp-dot{width:7px;height:7px;border-radius:50%;flex-shrink:0;}
+.fp-title{font-family:var(--mono);font-size:9px;font-weight:700;letter-spacing:1.2px;text-transform:uppercase;color:var(--text2);}
+.fp-body{padding:14px;}
+
+/* ─── 2-col grid ─── */
+.g2{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
+.g3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;}
+
+/* ─── MAPA SVG VISUAL ─── */
+.mapa-svg-wrap{background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:10px;margin:8px 0;text-align:center;}
+.mapa-svg-wrap svg{max-width:100%;height:auto;}
+
+/* ─── NOTIF BADGE ─── */
+.notif{display:inline-flex;align-items:center;gap:4px;font-family:var(--mono);font-size:9px;font-weight:700;}
+
+/* ─── ANIMATIONS ─── */
+@keyframes fadeUp{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+@keyframes fadeIn{from{opacity:0}to{opacity:1}}
+.panel{animation:fadeUp .35s ease both;}
+.panel:nth-child(2){animation-delay:.07s;}
+.panel:nth-child(3){animation-delay:.14s;}
+
+/* ─── FOOTER ─── */
+.footer{text-align:center;padding:10px;font-family:var(--mono);font-size:9px;color:var(--text3);border-top:1px solid var(--border);margin-top:10px;letter-spacing:.5px;}
+
+@media(max-width:960px){.dash3{grid-template-columns:1fr;}.kpi-row{grid-template-columns:repeat(3,1fr);}.g2,.g3{grid-template-columns:1fr;}}
+</style>
+</head>
+<body>
+
+<!-- ══════════ HEADER ══════════ -->
+<header class="hdr">
+  <div class="hdr-brand">
+    <div class="hdr-icon">MAL</div>
+    <div>
+      <div class="hdr-name">SALA SITUACIONAL — MALARIA</div>
+      <div class="hdr-sub">Nivel Municipal · Región Amazónica · EC-10 · Epidemiología en Salud Pública</div>
+    </div>
+  </div>
+  <div class="hdr-center">
+    <button class="hdr-tab active" onclick="goTab('dashboard',this)">Dashboard</button>
+    <button class="hdr-tab" onclick="goTab('epidemio',this)">Epidemiología</button>
+    <button class="hdr-tab" onclick="goTab('geoespacial',this)">Geoespacial</button>
+    <button class="hdr-tab" onclick="goTab('intervenciones',this)">Intervenciones</button>
+    <button class="hdr-tab" onclick="goTab('indicadores',this)">Indicadores</button>
+    <button class="hdr-tab" onclick="goTab('sistematizacion',this)">Sistematización</button>
+  </div>
+  <div class="hdr-right">
+    <div class="live-time" id="liveTime"></div>
+    <div class="alerta-pill"><div class="alerta-dot"></div>BROTE ACTIVO · SE8</div>
+  </div>
+</header>
+
+<!-- ══════════ KPI ROW ══════════ -->
+<div class="wrap" style="padding-bottom:0;">
+  <div class="kpi-row">
+    <div class="kpi"><div class="kpi-v c-red">154</div><div class="kpi-l">Casos acumulados</div></div>
+    <div class="kpi"><div class="kpi-v c-amber">35</div><div class="kpi-l">Casos SE8</div></div>
+    <div class="kpi"><div class="kpi-v c-red">3.62‰</div><div class="kpi-l">Incidencia acum.</div></div>
+    <div class="kpi"><div class="kpi-v c-red">18%</div><div class="kpi-l">Casos importados</div></div>
+    <div class="kpi"><div class="kpi-v c-green">0.3%</div><div class="kpi-l">Letalidad</div></div>
+    <div class="kpi"><div class="kpi-v c-amber">4.2d</div><div class="kpi-l">Tiempo notif.</div></div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════
+     TAB 1 — DASHBOARD (3 paneles)
+══════════════════════════════════════════ -->
+<div class="tab-pane active" id="tab-dashboard">
+<div class="wrap">
+<div class="dash3">
+
+  <!-- ══ PANEL IZQUIERDO: DEMOGRAFÍA ══ -->
+  <div class="panel">
+    <div class="panel-hdr">
+      <div class="panel-dot" style="background:var(--accent)"></div>
+      <span class="panel-hdr-title">Panel Izquierdo</span>
+      <span class="panel-hdr-badge">DEMOGRAFÍA</span>
+    </div>
+    <div class="panel-body">
+
+      <div class="mc-grid">
+        <div class="mc blue">
+          <div class="mc-label">Población total</div>
+          <div class="mc-val c-blue">42,500</div>
+          <div class="mc-sub">hab. · municipio</div>
+        </div>
+        <div class="mc blue">
+          <div class="mc-label">Viviendas</div>
+          <div class="mc-val c-blue">10,200</div>
+          <div class="mc-sub">totales</div>
+        </div>
+      </div>
+
+      <div class="sec">Distribución territorial</div>
+      <div class="sr"><span class="sr-l">Área urbana</span><span class="sr-r">12,800 <small class="c-blue" style="font-size:9px;">30.1%</small></span></div>
+      <div class="sr"><span class="sr-l">Área rural</span><span class="sr-r">29,700 <small class="c-amber" style="font-size:9px;">69.9%</small></span></div>
+
+      <div class="sec">Grupos etarios</div>
+      <div class="pyr">
+        <span class="pyr-lbl">&lt;5 años</span>
+        <div class="pyr-track"><div class="pyr-fill" style="width:12%;background:var(--red);"><span>12% · 5,100</span></div></div>
+      </div>
+      <div class="pyr">
+        <span class="pyr-lbl">5–14 años</span>
+        <div class="pyr-track"><div class="pyr-fill" style="width:20%;background:var(--amber);"><span>20% · 8,500</span></div></div>
+      </div>
+      <div class="pyr">
+        <span class="pyr-lbl">15–59 años</span>
+        <div class="pyr-track"><div class="pyr-fill" style="width:60%;background:var(--accent);"><span>60% · 25,500</span></div></div>
+      </div>
+      <div class="pyr">
+        <span class="pyr-lbl">≥60 años</span>
+        <div class="pyr-track"><div class="pyr-fill" style="width:8%;background:var(--green);"><span>8% · 3,400</span></div></div>
+      </div>
+
+      <div class="sec">Factores de riesgo</div>
+      <div class="prog">
+        <div class="prog-top"><span class="prog-name">Sin mosquiteros tratados</span><span class="prog-pct c-red">40% · 4,080 viv.</span></div>
+        <div class="prog-bar"><div class="prog-fill" style="width:40%;background:var(--red);"></div></div>
+      </div>
+      <div class="prog">
+        <div class="prog-top"><span class="prog-name">En zonas de alto riesgo</span><span class="prog-pct c-amber">35% · 14,875 hab.</span></div>
+        <div class="prog-bar"><div class="prog-fill" style="width:35%;background:var(--amber);"></div></div>
+      </div>
+      <div class="prog">
+        <div class="prog-top"><span class="prog-name">Comunidades sin TDR</span><span class="prog-pct c-red">43% · 12/28 comunidades</span></div>
+        <div class="prog-bar"><div class="prog-fill" style="width:43%;background:var(--red);"></div></div>
+      </div>
+      <div class="prog">
+        <div class="prog-top"><span class="prog-name">Viviendas con acceso a diagnóstico</span><span class="prog-pct c-green">57% · 16/28</span></div>
+        <div class="prog-bar"><div class="prog-fill" style="width:57%;background:var(--green);"></div></div>
+      </div>
+
+      <div class="abox abox-amber" style="margin-top:8px;">
+        <div class="abox-title">Contexto de vulnerabilidad</div>
+        <div class="abox-body">El 69.9% de la población reside en área rural con acceso limitado a servicios de salud. El grupo 15–59 años (60%) es el más expuesto por actividades laborales en zonas de criaderos.</div>
+      </div>
+
+      <div class="sec">Contexto socioeconómico</div>
+      <div class="sr"><span class="sr-l">Comunidades totales</span><span class="sr-r">28</span></div>
+      <div class="sr"><span class="sr-l">Comunidades sin TDR</span><span class="sr-r c-red">12</span></div>
+      <div class="sr"><span class="sr-l">Comunidades con TDR</span><span class="sr-r c-green">16</span></div>
+      <div class="sr"><span class="sr-l">Pob. en zona alto riesgo</span><span class="sr-r">14,875 hab.</span></div>
+
+    </div>
+  </div>
+
+  <!-- ══ PANEL CENTRAL: MAPAS Y GRÁFICOS ══ -->
+  <div class="panel">
+    <div class="panel-hdr">
+      <div class="panel-dot" style="background:var(--amber)"></div>
+      <span class="panel-hdr-title">Panel Central</span>
+      <span class="panel-hdr-badge">MAPAS · GRÁFICOS</span>
+    </div>
+    <div class="panel-body">
+
+      <!-- Curva epidémica -->
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:4px;">
+        <span style="font-family:var(--mono);font-size:10px;color:var(--text2);font-weight:700;">CURVA EPIDÉMICA · SE1–SE8</span>
+        <span id="se-badge-main" class="badge b-red">SE8 · 35 casos</span>
+      </div>
+      <div class="slider-row">
+        <span class="slider-lbl">Semana:</span>
+        <input type="range" min="1" max="8" value="8" id="slider1" oninput="updateSlider(this.value)">
+        <span class="slider-out" id="sOut">SE8</span>
+      </div>
+      <div class="cw" style="height:165px;">
+        <canvas id="cEpidemica" role="img" aria-label="Curva epidémica de malaria SE1 a SE8, tendencia creciente llegando a 35 casos en SE8."></canvas>
+      </div>
+      <div style="display:flex;gap:12px;margin-top:5px;flex-wrap:wrap;">
+        <div style="display:flex;align-items:center;gap:4px;font-size:9px;color:var(--text3);"><div style="width:10px;height:10px;border-radius:2px;background:rgba(0,212,255,.7);"></div>Normal (≤20)</div>
+        <div style="display:flex;align-items:center;gap:4px;font-size:9px;color:var(--text3);"><div style="width:10px;height:10px;border-radius:2px;background:rgba(255,77,109,.75);"></div>Alerta (&gt;20)</div>
+        <div style="display:flex;align-items:center;gap:4px;font-size:9px;color:var(--text3);"><div style="width:16px;height:3px;background:var(--amber);border-radius:2px;"></div>Umbral alerta</div>
+        <div style="display:flex;align-items:center;gap:4px;font-size:9px;color:var(--text3);"><div style="width:16px;height:3px;background:var(--purple);border-radius:2px;border-style:dashed;"></div>Acumulados</div>
+      </div>
+
+      <!-- Mapa sectorial visual -->
+      <div class="sec" style="margin-top:10px;">Mapa de incidencia por sector (últimas 4 semanas)</div>
+      <div class="map-grid">
+        <div class="map-tile t-red" onclick="tileClick('norte')">
+          <div class="tile-nm">Norte — El Progreso</div>
+          <div class="tile-num c-red">42 <small style="font-size:11px;">casos</small></div>
+          <div class="tile-inc">Pob. 8,200 · Inc. 5.12‰</div>
+          <div class="tile-extra"><span class="badge b-red">ALTO</span> · 8 criaderos</div>
+        </div>
+        <div class="map-tile t-amber" onclick="tileClick('oeste')">
+          <div class="tile-nm">Oeste — Nuevo Horizonte</div>
+          <div class="tile-num c-amber">15 <small style="font-size:11px;">casos</small></div>
+          <div class="tile-inc">Pob. 4,200 · Inc. 3.57‰</div>
+          <div class="tile-extra"><span class="badge b-amber">MEDIO</span> · 4 criaderos</div>
+        </div>
+        <div class="map-tile t-amber" onclick="tileClick('sur')">
+          <div class="tile-nm">Sur — La Palma</div>
+          <div class="tile-num c-amber">18 <small style="font-size:11px;">casos</small></div>
+          <div class="tile-inc">Pob. 6,500 · Inc. 2.77‰</div>
+          <div class="tile-extra"><span class="badge b-amber">MEDIO</span> · 3 criaderos</div>
+        </div>
+        <div class="map-tile t-green" onclick="tileClick('este')">
+          <div class="tile-nm">Este — San Antonio</div>
+          <div class="tile-num c-green">8 <small style="font-size:11px;">casos</small></div>
+          <div class="tile-inc">Pob. 5,800 · Inc. 1.38‰</div>
+          <div class="tile-extra"><span class="badge b-green">BAJO</span> · 1 criadero</div>
+        </div>
+        <div class="map-tile t-green t-full" onclick="tileClick('rural')">
+          <div class="tile-nm">Zona Rural (12 comunidades dispersas)</div>
+          <div class="tile-num c-green">20 <small style="font-size:11px;">casos</small></div>
+          <div class="tile-inc">Pob. 17,800 · Inc. 1.12‰ · 2 criaderos · <span class="badge b-green">BAJO</span></div>
+        </div>
+      </div>
+      <div class="tile-detail-panel" id="tileDetail"></div>
+
+      <!-- Gráfico criaderos por sector -->
+      <div class="sec" style="margin-top:8px;">Criaderos de Anopheles por sector</div>
+      <div class="cw" style="height:110px;">
+        <canvas id="cCriaderos" role="img" aria-label="Criaderos de Anopheles por sector. Norte tiene el mayor número con 8."></canvas>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ══ PANEL DERECHO: ANÁLISIS ══ -->
+  <div class="panel">
+    <div class="panel-hdr">
+      <div class="panel-dot" style="background:var(--red)"></div>
+      <span class="panel-hdr-title">Panel Derecho</span>
+      <span class="panel-hdr-badge">ANÁLISIS</span>
+    </div>
+    <div class="panel-body">
+
+      <div class="abox abox-red">
+        <div class="abox-title">⚠ BROTE EN CURSO — SEMANA 8</div>
+        <div class="abox-body">35 casos (+25% vs SE7). Umbral superado 3 semanas consecutivas. Sector Norte: riesgo crítico. Acción inmediata requerida.</div>
+      </div>
+
+      <div class="sec">Métricas clave</div>
+      <div class="mc-grid">
+        <div class="mc red"><div class="mc-label">Casos acumulados</div><div class="mc-val c-red">154</div><div class="mc-sub">año actual</div></div>
+        <div class="mc amber"><div class="mc-label">Incidencia acum.</div><div class="mc-val c-amber">3.62</div><div class="mc-sub">× 1,000 hab.</div></div>
+        <div class="mc red"><div class="mc-label">Casos importados</div><div class="mc-val c-red">18%</div><div class="mc-sub">meta &lt;10% ⚠</div></div>
+        <div class="mc green"><div class="mc-label">Tasa de letalidad</div><div class="mc-val c-green">0.3%</div><div class="mc-sub">meta &lt;0.5% ✓</div></div>
+      </div>
+
+      <div class="sec">Tendencia semana a semana</div>
+      <div class="cw" style="height:100px;">
+        <canvas id="cTendencia" role="img" aria-label="Tendencia semanal de casos con línea de tendencia ascendente."></canvas>
+      </div>
+
+      <div class="sec">Coberturas de intervención</div>
+      <div id="cobDash"></div>
+
+      <div class="abox abox-amber" style="margin-top:8px;">
+        <div class="abox-title">Retraso en notificación</div>
+        <div class="abox-body">Tiempo promedio actual: 4.2 días. Meta: ≤48 horas. Solo 62% de casos notificados a tiempo (meta 90%). Requiere fortalecimiento del sistema de vigilancia.</div>
+      </div>
+
+      <div class="sec">Acciones realizadas / pendientes</div>
+      <div class="act-item">
+        <div class="act-dot" style="background:var(--green)"></div>
+        <span class="act-txt">Fumigación intradomiciliaria ciclo actual (68% cobertura)</span>
+        <span class="act-tag" style="background:var(--green-dim);color:var(--green);">HECHO</span>
+      </div>
+      <div class="act-item">
+        <div class="act-dot" style="background:var(--green)"></div>
+        <span class="act-txt">Distribución TDR a 16 de 28 comunidades</span>
+        <span class="act-tag" style="background:var(--green-dim);color:var(--green);">HECHO</span>
+      </div>
+      <div class="act-item">
+        <div class="act-dot" style="background:var(--green)"></div>
+        <span class="act-txt">Tratamiento con esquema antimalárico (76% completaron)</span>
+        <span class="act-tag" style="background:var(--green-dim);color:var(--green);">HECHO</span>
+      </div>
+      <div class="act-item">
+        <div class="act-dot" style="background:var(--amber)"></div>
+        <span class="act-txt">Refuerzo distribución mosquiteros zonas rurales</span>
+        <span class="act-tag" style="background:var(--amber-dim);color:var(--amber);">PENDIENTE</span>
+      </div>
+      <div class="act-item">
+        <div class="act-dot" style="background:var(--amber)"></div>
+        <span class="act-txt">Capacitación agentes comunitarios SE9</span>
+        <span class="act-tag" style="background:var(--amber-dim);color:var(--amber);">PENDIENTE</span>
+      </div>
+      <div class="act-item">
+        <div class="act-dot" style="background:var(--red)"></div>
+        <span class="act-txt">Reducir tiempo notificación sospecha→confirmación a ≤48h</span>
+        <span class="act-tag" style="background:var(--red-dim);color:var(--red);">CRÍTICO</span>
+      </div>
+      <div class="act-item">
+        <div class="act-dot" style="background:var(--red)"></div>
+        <span class="act-txt">Fumigación intensiva Sector Norte (8 criaderos activos)</span>
+        <span class="act-tag" style="background:var(--red-dim);color:var(--red);">URGENTE</span>
+      </div>
+
+    </div>
+  </div>
+
+</div><!-- dash3 -->
+</div><!-- wrap -->
+</div><!-- tab-dashboard -->
+
+<!-- ══════════════════════════════════════════
+     TAB 2 — EPIDEMIOLOGÍA
+══════════════════════════════════════════ -->
+<div class="tab-pane" id="tab-epidemio">
+<div class="wrap">
+
+  <div class="full-panel">
+    <div class="fp-hdr"><div class="fp-dot" style="background:var(--amber)"></div><span class="fp-title">Tabla epidemiológica completa — Semanas 1 a 8 (Enero–Febrero)</span></div>
+    <div class="fp-body">
+      <table class="tbl" id="epiTable">
+        <thead><tr><th>#</th><th>Semana</th><th>Período</th><th>Casos semana</th><th>Var. %</th><th>Casos acumulados</th><th>Tasa × 1,000</th><th>Umbral superado</th><th>Estado</th></tr></thead>
+        <tbody></tbody>
+      </table>
+    </div>
+  </div>
+
+  <div class="g2">
+    <div class="full-panel">
+      <div class="fp-hdr"><div class="fp-dot" style="background:var(--accent)"></div><span class="fp-title">Curva epidémica completa (casos + acumulados)</span></div>
+      <div class="fp-body">
+        <div class="cw" style="height:240px;"><canvas id="cEpi2" role="img" aria-label="Curva epidémica completa con barras de casos semanales y línea de casos acumulados."></canvas></div>
+      </div>
+    </div>
+    <div class="full-panel">
+      <div class="fp-hdr"><div class="fp-dot" style="background:var(--purple)"></div><span class="fp-title">Tasa de incidencia semanal (× 1,000 hab.)</span></div>
+      <div class="fp-body">
+        <div class="cw" style="height:240px;"><canvas id="cTasa" role="img" aria-label="Tasa de incidencia semanal por 1000 habitantes mostrando incremento progresivo."></canvas></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="full-panel">
+    <div class="fp-hdr"><div class="fp-dot" style="background:var(--red)"></div><span class="fp-title">Análisis de variación semanal y alertas</span></div>
+    <div class="fp-body">
+      <div class="g3" id="alertaCards"></div>
+    </div>
+  </div>
+
+</div>
+</div>
+
+<!-- ══════════════════════════════════════════
+     TAB 3 — GEOESPACIAL
+══════════════════════════════════════════ -->
+<div class="tab-pane" id="tab-geoespacial">
+<div class="wrap">
+
+  <div class="g2">
+    <div class="full-panel">
+      <div class="fp-hdr"><div class="fp-dot" style="background:var(--accent)"></div><span class="fp-title">Incidencia por sector (× 1,000 hab.) — últimas 4 semanas</span></div>
+      <div class="fp-body">
+        <div class="cw" style="height:260px;"><canvas id="cGeo" role="img" aria-label="Gráfico de incidencia por sector mostrando El Progreso con mayor riesgo."></canvas></div>
+      </div>
+    </div>
+    <div class="full-panel">
+      <div class="fp-hdr"><div class="fp-dot" style="background:var(--amber)"></div><span class="fp-title">Criaderos de Anopheles identificados por sector</span></div>
+      <div class="fp-body">
+        <div class="cw" style="height:260px;"><canvas id="cCriad2" role="img" aria-label="Criaderos de Anopheles por sector del municipio."></canvas></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="full-panel">
+    <div class="fp-hdr"><div class="fp-dot" style="background:var(--red)"></div><span class="fp-title">Tabla geoespacial completa por sector / localidad</span></div>
+    <div class="fp-body">
+      <table class="tbl">
+        <thead><tr><th>Sector</th><th>Población</th><th>Casos 4 sem.</th><th>Incidencia ×1,000</th><th>Criaderos</th><th>% Pob. municipal</th><th>Riesgo</th></tr></thead>
+        <tbody>
+          <tr><td>Norte — El Progreso</td><td class="mono">8,200</td><td class="mono c-red">42</td><td class="mono c-red">5.12</td><td class="mono c-red">8</td><td class="mono">19.3%</td><td><span class="badge b-red">ALTO</span></td></tr>
+          <tr><td>Oeste — Nuevo Horizonte</td><td class="mono">4,200</td><td class="mono c-amber">15</td><td class="mono c-amber">3.57</td><td class="mono c-amber">4</td><td class="mono">9.9%</td><td><span class="badge b-amber">MEDIO</span></td></tr>
+          <tr><td>Sur — La Palma</td><td class="mono">6,500</td><td class="mono c-amber">18</td><td class="mono c-amber">2.77</td><td class="mono c-amber">3</td><td class="mono">15.3%</td><td><span class="badge b-amber">MEDIO</span></td></tr>
+          <tr><td>Este — San Antonio</td><td class="mono">5,800</td><td class="mono c-green">8</td><td class="mono c-green">1.38</td><td class="mono c-green">1</td><td class="mono">13.6%</td><td><span class="badge b-green">BAJO</span></td></tr>
+          <tr><td>Zona rural (12 comunidades)</td><td class="mono">17,800</td><td class="mono c-green">20</td><td class="mono c-green">1.12</td><td class="mono c-green">2</td><td class="mono">41.9%</td><td><span class="badge b-green">BAJO</span></td></tr>
+          <tr style="border-top:1px solid var(--border2)"><td><strong>TOTAL MUNICIPIO</strong></td><td class="mono c-accent"><strong>42,500</strong></td><td class="mono c-red"><strong>103</strong></td><td class="mono c-red"><strong>2.42</strong></td><td class="mono c-red"><strong>18</strong></td><td class="mono"><strong>100%</strong></td><td><span class="badge b-red">ALERTA</span></td></tr>
+        </tbody>
+      </table>
+      <div class="abox abox-blue" style="margin-top:10px;">
+        <div class="abox-title">Interpretación geoespacial</div>
+        <div class="abox-body">El Sector Norte concentra el 40.8% de todos los casos de las últimas 4 semanas con apenas el 19.3% de la población municipal. La correlación entre número de criaderos e incidencia es directa: 8 criaderos → 5.12‰, 1 criadero → 1.38‰. La zona rural, pese a tener el 41.9% de la población, mantiene baja incidencia posiblemente por subdetección (12 comunidades sin TDR).</div>
+      </div>
+    </div>
+  </div>
+
+</div>
+</div>
+
+<!-- ══════════════════════════════════════════
+     TAB 4 — INTERVENCIONES
+══════════════════════════════════════════ -->
+<div class="tab-pane" id="tab-intervenciones">
+<div class="wrap">
+
+  <div class="full-panel">
+    <div class="fp-hdr"><div class="fp-dot" style="background:var(--green)"></div><span class="fp-title">Coberturas vs. metas OPS/OMS — estado actual</span></div>
+    <div class="fp-body">
+      <div class="cw" style="height:280px;"><canvas id="cCob2" role="img" aria-label="Comparación de coberturas actuales versus metas OPS/OMS por intervención."></canvas></div>
+    </div>
+  </div>
+
+  <div class="full-panel">
+    <div class="fp-hdr"><div class="fp-dot" style="background:var(--accent)"></div><span class="fp-title">Tabla detallada de intervenciones y coberturas</span></div>
+    <div class="fp-body">
+      <table class="tbl">
+        <thead><tr><th>Indicador</th><th>Valor actual</th><th>Meta</th><th>Brecha</th><th>Estado</th><th>Interpretación</th></tr></thead>
+        <tbody>
+          <tr>
+            <td>Cobertura fumigación intradomiciliaria</td>
+            <td class="mono c-amber">68%</td><td class="mono">≥85%</td>
+            <td class="mono c-red">−17pp</td>
+            <td><span class="badge b-red">INSUFICIENTE</span></td>
+            <td>Faltan ~1,734 viviendas por fumigar en el ciclo actual</td>
+          </tr>
+          <tr>
+            <td>Cobertura distribución mosquiteros (MILD)</td>
+            <td class="mono c-red">52%</td><td class="mono">≥80%</td>
+            <td class="mono c-red">−28pp</td>
+            <td><span class="badge b-red">INSUFICIENTE</span></td>
+            <td>Solo 5,304 de 10,200 viviendas protegidas</td>
+          </tr>
+          <tr>
+            <td>Confirmación diagnóstica (TDR/gota gruesa)</td>
+            <td class="mono c-green">89%</td><td class="mono">100%</td>
+            <td class="mono c-amber">−11pp</td>
+            <td><span class="badge b-amber">ACEPTABLE</span></td>
+            <td>137/154 casos confirmados con prueba diagnóstica</td>
+          </tr>
+          <tr>
+            <td>Tiempo promedio notificación (sospecha→confirmación)</td>
+            <td class="mono c-red">4.2 días</td><td class="mono">≤48 h</td>
+            <td class="mono c-red">+3.2d</td>
+            <td><span class="badge b-red">RETRASO</span></td>
+            <td>Retraso mayor en zonas rurales sin acceso a TDR</td>
+          </tr>
+          <tr>
+            <td>Proporción casos importados</td>
+            <td class="mono c-red">18%</td><td class="mono">&lt;10%</td>
+            <td class="mono c-red">+8pp</td>
+            <td><span class="badge b-red">ALERTA</span></td>
+            <td>~28 casos adquiridos fuera del municipio (riesgo reintroducción)</td>
+          </tr>
+          <tr>
+            <td>Tasa de letalidad por malaria</td>
+            <td class="mono c-green">0.3%</td><td class="mono">&lt;0.5%</td>
+            <td class="mono c-green">−0.2pp</td>
+            <td><span class="badge b-green">CUMPLE</span></td>
+            <td>1 muerte de 320 casos confirmados históricos</td>
+          </tr>
+          <tr>
+            <td>Casos notificados en ≤48 horas</td>
+            <td class="mono c-red">62%</td><td class="mono">≥90%</td>
+            <td class="mono c-red">−28pp</td>
+            <td><span class="badge b-red">INSUFICIENTE</span></td>
+            <td>Notificación oportuna comprometida en toda la red</td>
+          </tr>
+          <tr>
+            <td>Tratamiento completo con esquema antimalárico</td>
+            <td class="mono c-amber">76%</td><td class="mono">≥95%</td>
+            <td class="mono c-red">−19pp</td>
+            <td><span class="badge b-red">INSUFICIENTE</span></td>
+            <td>Riesgo de resistencia y recaída por abandono del tratamiento</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <div class="g2">
+    <div class="abox abox-red" style="border-radius:8px;padding:12px 14px;">
+      <div class="abox-title">Indicadores críticos (requieren acción inmediata)</div>
+      <div class="abox-body">• Tiempo de notificación: 4.2 días vs meta ≤48h<br>• Casos importados: 18% vs meta &lt;10%<br>• Cobertura mosquiteros: 52% vs meta 80%<br>• Notificación oportuna: 62% vs meta 90%</div>
+    </div>
+    <div class="abox abox-amber" style="border-radius:8px;padding:12px 14px;">
+      <div class="abox-title">Indicadores en zona de mejora</div>
+      <div class="abox-body">• Fumigación: 68% vs meta 85% (−17pp)<br>• Tratamiento completo: 76% vs meta 95%<br>• Confirmación diagnóstica: 89% vs meta 100%<br>Requieren refuerzo pero no son críticos aún.</div>
+    </div>
+  </div>
+
+</div>
+</div>
+
+<!-- ══════════════════════════════════════════
+     TAB 5 — INDICADORES
+══════════════════════════════════════════ -->
+<div class="tab-pane" id="tab-indicadores">
+<div class="wrap">
+
+  <div class="full-panel">
+    <div class="fp-hdr"><div class="fp-dot" style="background:var(--purple)"></div><span class="fp-title">Indicadores epidemiológicos — fórmulas y cálculos (clic para expandir)</span></div>
+    <div class="fp-body" id="indicadoresList"></div>
+  </div>
+
+  <div class="g2">
+    <div class="full-panel">
+      <div class="fp-hdr"><div class="fp-dot" style="background:var(--accent)"></div><span class="fp-title">Comparación cobertura diagnóstica vs. tratamiento</span></div>
+      <div class="fp-body">
+        <div class="cw" style="height:200px;"><canvas id="cDxTto" role="img" aria-label="Comparación entre cobertura diagnóstica y de tratamiento por semana."></canvas></div>
+      </div>
+    </div>
+    <div class="full-panel">
+      <div class="fp-hdr"><div class="fp-dot" style="background:var(--red)"></div><span class="fp-title">Distribución de casos por área</span></div>
+      <div class="fp-body">
+        <div class="cw" style="height:200px;"><canvas id="cDonut" role="img" aria-label="Distribución porcentual de casos por sector geográfico."></canvas></div>
+      </div>
+    </div>
+  </div>
+
+</div>
+</div>
+
+<!-- ══════════════════════════════════════════
+     TAB 6 — SISTEMATIZACIÓN
+══════════════════════════════════════════ -->
+<div class="tab-pane" id="tab-sistematizacion">
+<div class="wrap">
+
+  <div class="full-panel">
+    <div class="fp-hdr"><div class="fp-dot" style="background:var(--accent)"></div><span class="fp-title">Proceso de captación y consolidación de datos — clic en cada etapa</span></div>
+    <div class="fp-body">
+      <div class="flow" id="flowSteps"></div>
+      <div class="flow-detail" id="flowDetail"></div>
+    </div>
+  </div>
+
+  <div class="full-panel">
+    <div class="fp-hdr"><div class="fp-dot" style="background:var(--amber)"></div><span class="fp-title">Tabla de fuentes de datos y responsables</span></div>
+    <div class="fp-body">
+      <table class="tbl">
+        <thead><tr><th>Etapa</th><th>Descripción detallada</th><th>Sistema / Herramienta</th><th>Frecuencia</th><th>Responsable</th></tr></thead>
+        <tbody>
+          <tr><td class="mono c-accent">Captación</td><td>Notificación semanal de casos por cada puesto de salud mediante fichas epidemiológicas de Malaria (datos del paciente, localización, especie de Plasmodium, factores de riesgo)</td><td>Ficha epidemiológica · SIVIGILA</td><td>Semanal (SE)</td><td>Técnico de salud</td></tr>
+          <tr><td class="mono c-accent">Consolidación</td><td>Digitación en base de datos local dentro de las 24–48 horas. El epidemiólogo valida y depura duplicados o registros incompletos antes del análisis</td><td>Excel / SIVIGILA / SNVS</td><td>24–48 horas</td><td>Epidemiólogo local</td></tr>
+          <tr><td class="mono c-accent">Análisis</td><td>Cálculo de tasas de incidencia, tendencias por semana epidemiológica, identificación de conglomerados y comparación con umbrales de alerta (&gt;20 casos/sem o +30% vs SE anterior)</td><td>Excel · EpiInfo · R</td><td>Semanal</td><td>Epidemiólogo / Analista</td></tr>
+          <tr><td class="mono c-accent">Visualización</td><td>Generación de mapas de calor (QGIS), curvas epidémicas y gráficos de coberturas (Power BI / Excel). Actualización de sala situacional con resultados del análisis</td><td>QGIS · Power BI · Excel</td><td>Semanal</td><td>Analista SIG</td></tr>
+          <tr><td class="mono c-accent">Difusión</td><td>Actualización semanal de la Sala Situacional para el equipo de gestión local, SEDES y autoridades municipales. Alertas tempranas vía correo y WhatsApp institucional</td><td>Correo · WhatsApp · Reunión</td><td>Semanal (lunes)</td><td>Director municipal</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <div class="g2">
+    <div class="full-panel">
+      <div class="fp-hdr"><div class="fp-dot" style="background:var(--green)"></div><span class="fp-title">Criterios de alerta temprana</span></div>
+      <div class="fp-body">
+        <div class="abox abox-red">
+          <div class="abox-title">Umbral de alerta activado cuando:</div>
+          <div class="abox-body">• Más de <strong>20 casos por semana epidemiológica</strong><br>• Aumento mayor al <strong>30%</strong> respecto a la semana anterior<br>• Confirmación de <strong>brote en un sector específico</strong><br>• Casos importados superiores al <strong>10%</strong></div>
+        </div>
+        <div class="abox abox-amber" style="margin-top:6px;">
+          <div class="abox-title">Estado actual (SE8):</div>
+          <div class="abox-body">✓ Criterio 1: 35 casos &gt; 20 → ALERTA<br>✓ Criterio 2: +25% vs SE7 (28→35) → ALERTA<br>✓ Criterio 3: Brote activo Sector Norte → ALERTA<br>✓ Criterio 4: 18% importados &gt; 10% → ALERTA</div>
+        </div>
+      </div>
+    </div>
+    <div class="full-panel">
+      <div class="fp-hdr"><div class="fp-dot" style="background:var(--purple)"></div><span class="fp-title">Herramientas recomendadas</span></div>
+      <div class="fp-body">
+        <table class="tbl">
+          <thead><tr><th>Herramienta</th><th>Tipo</th><th>Acceso</th></tr></thead>
+          <tbody>
+            <tr><td>Canva</td><td>Dashboard / SSS</td><td><span class="badge b-green">Gratuito</span></td></tr>
+            <tr><td>Power BI</td><td>Gráficos dinámicos</td><td><span class="badge b-amber">Free/Pro</span></td></tr>
+            <tr><td>QGIS</td><td>Mapas SIG</td><td><span class="badge b-green">Open Source</span></td></tr>
+            <tr><td>Lucidchart</td><td>Diagramas</td><td><span class="badge b-amber">Limitado</span></td></tr>
+            <tr><td>Miro</td><td>Pizarra virtual</td><td><span class="badge b-amber">Limitado</span></td></tr>
+            <tr><td>SIVIGILA / SNVS</td><td>Notificación oficial</td><td><span class="badge b-blue">Institucional</span></td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+</div>
+</div>
+
+<div class="footer">SALA SITUACIONAL VIRTUAL · EC-10 · EPIDEMIOLOGÍA EN SALUD PÚBLICA · DATOS SE1–SE8 · MUNICIPIO AMAZÓNICO · 42,500 HAB.</div>
+
+<!-- ══════════ JAVASCRIPT ══════════ -->
+<script>
+// ─── DATA ───
+const SE = [
+  {se:'SE1',mes:'Ene',casos:12,acum:12,tasa:0.28},
+  {se:'SE2',mes:'Ene',casos:15,acum:27,tasa:0.35},
+  {se:'SE3',mes:'Ene',casos:10,acum:37,tasa:0.24},
+  {se:'SE4',mes:'Ene',casos:14,acum:51,tasa:0.33},
+  {se:'SE5',mes:'Feb',casos:18,acum:69,tasa:0.42},
+  {se:'SE6',mes:'Feb',casos:22,acum:91,tasa:0.52},
+  {se:'SE7',mes:'Feb',casos:28,acum:119,tasa:0.66},
+  {se:'SE8',mes:'Feb',casos:35,acum:154,tasa:0.82}
+];
+const COB = [
+  {nombre:'Fumigación intradomiciliaria',val:68,meta:85},
+  {nombre:'Distribución mosquiteros',val:52,meta:80},
+  {nombre:'Confirmación diagnóstica (TDR)',val:89,meta:100},
+  {nombre:'Notificación ≤48h',val:62,meta:90},
+  {nombre:'Tratamiento completo',val:76,meta:95}
+];
+const SECTORES = {
+  norte:{nm:'Norte – El Progreso',pob:8200,casos:42,inc:5.12,criad:8,color:'var(--red)',badge:'b-red',riesgo:'ALTO',detalle:'Sector de mayor riesgo. Alta densidad de criaderos (8 identificados) en zonas de inundación estacional. Requiere fumigación intensiva, eliminación de criaderos y distribución prioritaria de MILD.'},
+  sur:{nm:'Sur – La Palma',pob:6500,casos:18,inc:2.77,criad:3,color:'var(--amber)',badge:'b-amber',riesgo:'MEDIO',detalle:'Riesgo moderado en ascenso. 3 criaderos activos. Implementar fumigación preventiva y asegurar cobertura de TDR en todos los puestos de salud del sector.'},
+  este:{nm:'Este – San Antonio',pob:5800,casos:8,inc:1.38,criad:1,color:'var(--green)',badge:'b-green',riesgo:'BAJO',detalle:'Riesgo bajo pero monitoreable. El único criadero identificado debe ser eliminado. Mantener vigilancia activa y disponibilidad de TDR.'},
+  oeste:{nm:'Oeste – Nuevo Horizonte',pob:4200,casos:15,inc:3.57,criad:4,color:'var(--amber)',badge:'b-amber',riesgo:'MEDIO',detalle:'Incidencia media-alta en relación a su población (3.57‰). Tendencia al alza. Reforzar rociado peridomiciliario y entrega de mosquiteros en zonas periurbanas.'},
+  rural:{nm:'Zona Rural (12 comunidades)',pob:17800,casos:20,inc:1.12,criad:2,color:'var(--green)',badge:'b-green',riesgo:'BAJO',detalle:'Posible subdetección: 12 comunidades sin TDR. La baja incidencia puede deberse a falta de diagnóstico, no a ausencia de casos. Prioridad: extender red diagnóstica a las 12 comunidades restantes.'}
+};
+const INDICADORES = [
+  {nm:'Incidencia acumulada',formula:'(Casos nuevos / Población total) × 1,000',calculo:'(154 / 42,500) × 1,000 = 3.62 × 1,000 hab.',resultado:'3.62‰',color:'c-amber',interp:'Existen 3.62 casos por cada 1,000 habitantes en el año. Indica transmisión activa en el municipio.'},
+  {nm:'Tasa de incidencia semanal SE8',formula:'(Casos semana / Población total) × 1,000',calculo:'(35 / 42,500) × 1,000 = 0.82 × 1,000 hab.',resultado:'0.82‰',color:'c-red',interp:'La tasa semanal más alta del período. Refleja intensificación del brote en SE8.'},
+  {nm:'Tasa de letalidad',formula:'(Muertes por Malaria / Casos confirmados) × 100',calculo:'(1 / 320) × 100 = 0.31%',resultado:'0.31%',color:'c-green',interp:'Por debajo del 0.5% de la meta OPS. Indica manejo clínico adecuado, aunque debe mantenerse la vigilancia.'},
+  {nm:'Proporción de casos importados',formula:'(Casos adquiridos fuera / Total casos) × 100',calculo:'(28 / 154) × 100 = 18.2%',resultado:'18.2%',color:'c-red',interp:'Supera la meta del 10%. Alto riesgo de reintroducción. Revisar procedencia de casos y reforzar barreras sanitarias.'},
+  {nm:'Cobertura de diagnóstico',formula:'(Casos con prueba diagnóstica / Casos sospechosos) × 100',calculo:'(137 / 154) × 100 = 88.96%',resultado:'89%',color:'c-amber',interp:'Aceptable pero no óptima. 17 casos sin confirmación diagnóstica. Ampliar acceso a TDR en zonas sin cobertura.'},
+  {nm:'Cobertura de fumigación',formula:'(Viviendas fumigadas / Viviendas objetivo) × 100',calculo:'(6,936 / 10,200) × 100 = 68%',resultado:'68%',color:'c-red',interp:'Insuficiente. Meta: ≥85%. Se estima que ~1,734 viviendas no fueron fumigadas en el ciclo actual, dejando focos de transmisión activos.'},
+  {nm:'Cobertura de mosquiteros (MILD)',formula:'(Viviendas con mosquitero / Viviendas totales) × 100',calculo:'(5,304 / 10,200) × 100 = 52%',resultado:'52%',color:'c-red',interp:'Muy por debajo de la meta del 80%. El 40% de las viviendas reporta no tener mosquiteros tratados (4,080 viviendas).'},
+  {nm:'Notificación oportuna (≤48h)',formula:'(Casos notificados ≤48h / Total casos) × 100',calculo:'(95 / 154) × 100 = 62%',resultado:'62%',color:'c-red',interp:'Meta: ≥90%. Solo 62% notificados a tiempo. El retraso promedio de 4.2 días impide la respuesta oportuna ante brotes.'},
+  {nm:'Variación semanal SE7→SE8',formula:'((Casos SE8 − Casos SE7) / Casos SE7) × 100',calculo:'((35 − 28) / 28) × 100 = +25%',resultado:'+25%',color:'c-red',interp:'Supera el umbral de alerta del 30% (25%). Junto con las 35 casos > 20, confirma alerta activa en SE8.'}
+];
+const FLUJO = [
+  {num:'①',lbl:'Captación',titulo:'① Captación — Notificación semanal',detalle:'Cada puesto de salud registra los casos sospechosos y confirmados de Malaria mediante fichas epidemiológicas estandarizadas. Se captura: datos del paciente, localización GPS/comunidad, resultado TDR o gota gruesa, especie de Plasmodium (P. vivax / P. falciparum), síntomas y factores de riesgo (viaje reciente, zona de criaderos, ausencia de mosquitero). Plazo: dentro de las primeras 24 horas de la consulta.'},
+  {num:'②',lbl:'Consolidación',titulo:'② Consolidación — Digitación y validación',detalle:'El epidemiólogo municipal consolida diariamente los registros en la base de datos local (SIVIGILA / SNVS / Excel). Se validan registros duplicados, campos vacíos y inconsistencias. La base consolidada alimenta el análisis semanal. Plazo esperado: 24–48 horas tras la notificación. Estado actual: 62% de casos notificados en ≤48h (meta 90%).'},
+  {num:'③',lbl:'Análisis',titulo:'③ Análisis — Cálculo y comparación',detalle:'Cada semana se calculan: tasas de incidencia acumulada y semanal, variación porcentual vs. semana anterior, comparación con umbrales de alerta (>20 casos/sem o +30%), análisis por grupos etarios y sectores geográficos, y estratificación de riesgo por localidad. Se identifican conglomerados espaciales y temporales para orientar la respuesta. Herramientas: EpiInfo, R, Excel.'},
+  {num:'④',lbl:'Visualización',titulo:'④ Visualización — Mapas y gráficos',detalle:'Los resultados del análisis se convierten en visualizaciones para la Sala Situacional: mapas de calor por sector (QGIS), curvas epidémicas por semana epidemiológica (Excel/Power BI), gráficos de coberturas de intervención, y tableros de indicadores. Esta sala situacional digital es el producto de esta etapa. Actualización: cada lunes con datos de la semana anterior.'},
+  {num:'⑤',lbl:'Difusión',titulo:'⑤ Difusión — Toma de decisiones',detalle:'La información se presenta al equipo de gestión municipal, SEDES y autoridades locales cada semana en reunión de sala situacional. Cuando se activa una alerta (umbral superado) se emite notificación inmediata por correo institucional y WhatsApp al director municipal, epidemiólogo departamental y equipos de vectorial y diagnóstico. Las decisiones de intervención (fumigación, distribución de insumos, brigadas) parten de este espacio.'}
+];
+
+// ─── LIVE CLOCK ───
+function tick(){
+  const d=new Date();
+  document.getElementById('liveTime').textContent=
+    d.toLocaleDateString('es-BO',{weekday:'short',day:'2-digit',month:'short',year:'numeric'})+' '+
+    d.toLocaleTimeString('es-BO',{hour:'2-digit',minute:'2-digit',second:'2-digit'});
+}
+tick(); setInterval(tick,1000);
+
+// ─── TABS ───
+function goTab(id,btn){
+  document.querySelectorAll('.tab-pane').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.hdr-tab').forEach(b=>b.classList.remove('active'));
+  document.getElementById('tab-'+id).classList.add('active');
+  btn.classList.add('active');
+  // lazy-init charts
+  if(id==='epidemio'&&!window._epiDone){window._epiDone=true;initEpiCharts();}
+  if(id==='geoespacial'&&!window._geoDone){window._geoDone=true;initGeoCharts();}
+  if(id==='intervenciones'&&!window._intDone){window._intDone=true;initIntCharts();}
+  if(id==='indicadores'&&!window._indDone){window._indDone=true;initIndicadores();}
+  if(id==='sistematizacion'&&!window._sisDone){window._sisDone=true;initSist();}
+}
+
+// ─── CHART DEFAULTS ───
+Chart.defaults.color='#7a90b0';
+Chart.defaults.borderColor='rgba(0,212,255,0.08)';
+const GRID='rgba(0,212,255,0.06)';
+const TIP={backgroundColor:'#131c2e',borderColor:'rgba(0,212,255,0.3)',borderWidth:1,titleColor:'#c9d5e8',bodyColor:'#7a90b0',padding:10};
+
+// ─── DASHBOARD CHARTS ───
+function colBar(v){return v>20?'rgba(255,77,109,.75)':'rgba(0,212,255,.65)';}
+const CE=document.getElementById('cEpidemica').getContext('2d');
+const curvaMain=new Chart(CE,{
+  type:'bar',
+  data:{
+    labels:SE.map(d=>d.se),
+    datasets:[
+      {label:'Casos',data:SE.map(d=>d.casos),backgroundColor:SE.map(d=>colBar(d.casos)),borderRadius:4,order:2},
+      {label:'Umbral',data:Array(8).fill(20),type:'line',borderColor:'rgba(255,184,77,.7)',borderDash:[5,3],borderWidth:1.5,pointRadius:0,fill:false,order:1},
+      {label:'Acumulados',data:SE.map(d=>d.acum),type:'line',borderColor:'rgba(167,139,250,.7)',borderWidth:1.5,pointRadius:3,pointBackgroundColor:'rgba(167,139,250,.7)',fill:false,yAxisID:'y2',order:0}
+    ]
+  },
+  options:{responsive:true,maintainAspectRatio:false,
+    plugins:{legend:{display:false},tooltip:{...TIP,mode:'index',intersect:false}},
+    scales:{
+      x:{ticks:{font:{size:9}},grid:{color:GRID},border:{color:'transparent'}},
+      y:{ticks:{font:{size:9}},grid:{color:GRID},border:{color:'transparent'},title:{display:true,text:'Casos/sem',font:{size:9},color:'#3d5275'}},
+      y2:{position:'right',ticks:{font:{size:9},color:'rgba(167,139,250,.6)'},grid:{display:false},border:{color:'transparent'}}
+    }
+  }
+});
+
+// Criaderos dashboard
+new Chart(document.getElementById('cCriaderos').getContext('2d'),{
+  type:'bar',
+  data:{
+    labels:['Norte','Oeste','Sur','Este','Rural'],
+    datasets:[{
+      label:'Criaderos',
+      data:[8,4,3,1,2],
+      backgroundColor:['rgba(255,77,109,.7)','rgba(255,184,77,.7)','rgba(255,184,77,.7)','rgba(61,255,160,.7)','rgba(61,255,160,.7)'],
+      borderRadius:4
+    }]
+  },
+  options:{responsive:true,maintainAspectRatio:false,
+    plugins:{legend:{display:false},tooltip:{...TIP}},
+    scales:{
+      x:{ticks:{font:{size:9}},grid:{display:false},border:{color:'transparent'}},
+      y:{ticks:{font:{size:9},stepSize:2},grid:{color:GRID},border:{color:'transparent'}}
+    }
+  }
+});
+
+// Tendencia sparkline
+new Chart(document.getElementById('cTendencia').getContext('2d'),{
+  type:'line',
+  data:{
+    labels:SE.map(d=>d.se),
+    datasets:[{
+      data:SE.map(d=>d.tasa),
+      borderColor:'rgba(255,77,109,.8)',borderWidth:2,
+      pointBackgroundColor:SE.map(d=>d.casos>20?'rgba(255,77,109,1)':'rgba(0,212,255,.7)'),
+      pointRadius:4,fill:true,
+      backgroundColor:'rgba(255,77,109,.05)'
+    }]
+  },
+  options:{responsive:true,maintainAspectRatio:false,
+    plugins:{legend:{display:false},tooltip:{...TIP,callbacks:{label:c=>'Tasa: '+c.parsed.y.toFixed(2)+'‰'}}},
+    scales:{
+      x:{ticks:{font:{size:8}},grid:{display:false},border:{color:'transparent'}},
+      y:{ticks:{font:{size:8}},grid:{color:GRID},border:{color:'transparent'}}
+    }
+  }
+});
+
+// Coberturas panel derecho
+const cobDash=document.getElementById('cobDash');
+COB.forEach(c=>{
+  const col=c.val>=c.meta*.9?'var(--green)':c.val>=c.meta*.75?'var(--amber)':'var(--red)';
+  cobDash.innerHTML+=`<div class="prog">
+    <div class="prog-top"><span class="prog-name">${c.nombre}</span><span class="prog-pct" style="color:${col};">${c.val}% / ${c.meta}%</span></div>
+    <div class="prog-bar"><div class="prog-fill" style="width:${c.val}%;background:${col};"></div></div>
+  </div>`;
+});
+
+// ─── SLIDER ───
+function updateSlider(v){
+  const d=SE[v-1];
+  document.getElementById('sOut').textContent=d.se;
+  const badge=document.getElementById('se-badge-main');
+  badge.textContent=d.se+' · '+d.casos+' casos';
+  badge.className='badge '+(d.casos>20?'b-red':d.casos>14?'b-amber':'b-green');
+  curvaMain.data.datasets[0].backgroundColor=SE.map((dd,i)=>{
+    if(i===v-1) return dd.casos>20?'rgba(255,77,109,1)':'rgba(0,212,255,1)';
+    return dd.casos>20?'rgba(255,77,109,.2)':'rgba(0,212,255,.2)';
+  });
+  curvaMain.update('none');
+}
+
+// ─── TILE DETAIL ───
+const tileDetailEl=document.getElementById('tileDetail');
+function tileClick(k){
+  const s=SECTORES[k];
+  const show=tileDetailEl.style.display==='block'&&tileDetailEl.dataset.k===k;
+  tileDetailEl.style.display=show?'none':'block';
+  tileDetailEl.dataset.k=k;
+  tileDetailEl.innerHTML=`
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px;">
+      <span style="font-family:var(--mono);font-size:11px;font-weight:700;color:${s.color};">${s.nm}</span>
+      <span class="badge ${s.badge}">${s.riesgo}</span>
+    </div>
+    <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:8px;">
+      <div><div style="font-size:8px;color:var(--text3);text-transform:uppercase;">Población</div><div style="font-family:var(--mono);font-weight:700;font-size:14px;color:var(--text);">${s.pob.toLocaleString()}</div></div>
+      <div><div style="font-size:8px;color:var(--text3);text-transform:uppercase;">Casos</div><div style="font-family:var(--mono);font-weight:700;font-size:14px;color:${s.color};">${s.casos}</div></div>
+      <div><div style="font-size:8px;color:var(--text3);text-transform:uppercase;">Incidencia</div><div style="font-family:var(--mono);font-weight:700;font-size:14px;color:${s.color};">${s.inc}‰</div></div>
+      <div><div style="font-size:8px;color:var(--text3);text-transform:uppercase;">Criaderos</div><div style="font-family:var(--mono);font-weight:700;font-size:14px;color:${s.color};">${s.criad}</div></div>
+    </div>
+    <div style="font-size:10px;color:var(--text2);line-height:1.6;">${s.detalle}</div>`;
+}
+
+// ─── EPIDEMIO TAB ───
+function initEpiCharts(){
+  // Tabla
+  const tbody=document.querySelector('#epiTable tbody');
+  SE.forEach((d,i)=>{
+    const prev=i>0?SE[i-1].casos:null;
+    const vari=prev!==null?((d.casos-prev)/prev*100).toFixed(1):'-';
+    const variColor=prev===null?'':parseFloat(vari)>30?'c-red':parseFloat(vari)>0?'c-amber':'c-green';
+    const sup=d.casos>20?'<span class="badge b-red">SÍ</span>':'<span class="badge b-green">NO</span>';
+    const st=d.casos>20?'<span class="badge b-red">ALERTA</span>':d.casos>14?'<span class="badge b-amber">PRECAUCIÓN</span>':'<span class="badge b-green">NORMAL</span>';
+    tbody.innerHTML+=`<tr>
+      <td class="mono">${i+1}</td>
+      <td class="mono c-accent">${d.se}</td>
+      <td>${d.mes}</td>
+      <td class="mono" style="font-weight:700;">${d.casos}</td>
+      <td class="mono ${variColor}">${vari==='−'?vari:vari+' %'}</td>
+      <td class="mono">${d.acum}</td>
+      <td class="mono">${d.tasa.toFixed(2)}</td>
+      <td>${sup}</td>
+      <td>${st}</td>
+    </tr>`;
+  });
+
+  // Chart curva completa
+  new Chart(document.getElementById('cEpi2').getContext('2d'),{
+    data:{labels:SE.map(d=>d.se),datasets:[
+      {type:'bar',label:'Casos semanales',data:SE.map(d=>d.casos),backgroundColor:SE.map(d=>colBar(d.casos)),borderRadius:4,order:2},
+      {type:'line',label:'Casos acumulados',data:SE.map(d=>d.acum),borderColor:'rgba(167,139,250,.8)',borderWidth:2,pointRadius:4,pointBackgroundColor:'rgba(167,139,250,.8)',fill:false,yAxisID:'y2',order:1},
+      {type:'line',label:'Umbral alerta',data:Array(8).fill(20),borderColor:'rgba(255,184,77,.5)',borderDash:[5,3],borderWidth:1.5,pointRadius:0,fill:false,order:3}
+    ]},
+    options:{responsive:true,maintainAspectRatio:false,
+      plugins:{legend:{display:true,labels:{color:'#7a90b0',boxWidth:12,font:{size:9}}},tooltip:{...TIP,mode:'index',intersect:false}},
+      scales:{
+        x:{ticks:{font:{size:9}},grid:{color:GRID},border:{color:'transparent'}},
+        y:{ticks:{font:{size:9}},grid:{color:GRID},border:{color:'transparent'},title:{display:true,text:'Casos/sem',font:{size:9}}},
+        y2:{position:'right',ticks:{font:{size:9},color:'rgba(167,139,250,.7)'},grid:{display:false},border:{color:'transparent'},title:{display:true,text:'Acumulados',font:{size:9},color:'rgba(167,139,250,.7)'}}
+      }
+    }
+  });
+
+  // Tasa chart
+  new Chart(document.getElementById('cTasa').getContext('2d'),{
+    type:'line',
+    data:{labels:SE.map(d=>d.se),datasets:[{
+      label:'Tasa ×1,000 hab.',data:SE.map(d=>d.tasa),
+      borderColor:'rgba(167,139,250,.9)',borderWidth:2.5,
+      pointBackgroundColor:SE.map(d=>d.casos>20?'rgba(255,77,109,1)':'rgba(167,139,250,1)'),
+      pointRadius:5,fill:true,
+      backgroundColor:'rgba(167,139,250,.06)'
+    }]},
+    options:{responsive:true,maintainAspectRatio:false,
+      plugins:{legend:{display:false},tooltip:{...TIP,callbacks:{label:c=>'Tasa: '+c.parsed.y.toFixed(2)+'‰'}}},
+      scales:{
+        x:{ticks:{font:{size:9}},grid:{color:GRID},border:{color:'transparent'}},
+        y:{ticks:{font:{size:9},callback:v=>v.toFixed(2)+'‰'},grid:{color:GRID},border:{color:'transparent'}}
+      }
+    }
+  });
+
+  // Alerta cards
+  const cont=document.getElementById('alertaCards');
+  SE.forEach((d,i)=>{
+    const prev=i>0?SE[i-1].casos:null;
+    const vari=prev!==null?((d.casos-prev)/prev*100).toFixed(1):null;
+    const isAlerta=d.casos>20;
+    const cls=isAlerta?'abox-red':vari&&parseFloat(vari)>20?'abox-amber':'abox-green';
+    cont.innerHTML+=`<div class="abox ${cls}">
+      <div class="abox-title">${d.se} · ${d.mes}</div>
+      <div class="abox-body">
+        <strong style="font-size:16px;font-family:var(--mono);">${d.casos}</strong> casos<br>
+        Acum: <strong>${d.acum}</strong> · Tasa: <strong>${d.tasa.toFixed(2)}‰</strong><br>
+        ${vari!==null?'Var: <strong>'+vari+'%</strong>':'Primera semana'}<br>
+        ${isAlerta?'<span class="badge b-red" style="margin-top:3px;">UMBRAL SUPERADO</span>':'<span class="badge b-green" style="margin-top:3px;">DENTRO DE UMBRAL</span>'}
+      </div>
+    </div>`;
+  });
+}
+
+// ─── GEO TAB ───
+function initGeoCharts(){
+  new Chart(document.getElementById('cGeo').getContext('2d'),{
+    type:'bar',
+    data:{
+      labels:['Norte\nEl Progreso','Sur\nLa Palma','Oeste\nN. Horizonte','Este\nSan Antonio','Rural'],
+      datasets:[
+        {label:'Incidencia actual ×1,000',data:[5.12,2.77,3.57,1.38,1.12],
+          backgroundColor:['rgba(255,77,109,.75)','rgba(255,184,77,.75)','rgba(255,184,77,.75)','rgba(61,255,160,.75)','rgba(61,255,160,.75)'],borderRadius:4},
+        {label:'Umbral alto (5‰)',data:Array(5).fill(5),type:'line',borderColor:'rgba(255,77,109,.5)',borderDash:[4,3],borderWidth:1.5,pointRadius:0,fill:false}
+      ]
+    },
+    options:{responsive:true,maintainAspectRatio:false,
+      plugins:{legend:{display:true,labels:{color:'#7a90b0',boxWidth:12,font:{size:9}}},tooltip:{...TIP}},
+      scales:{
+        x:{ticks:{font:{size:9}},grid:{display:false},border:{color:'transparent'}},
+        y:{ticks:{font:{size:9},callback:v=>v+'‰'},grid:{color:GRID},border:{color:'transparent'}}
+      }
+    }
+  });
+  new Chart(document.getElementById('cCriad2').getContext('2d'),{
+    type:'doughnut',
+    data:{
+      labels:['Norte (El Progreso)','Oeste (Nuevo Horizonte)','Sur (La Palma)','Zona rural','Este (San Antonio)'],
+      datasets:[{data:[8,4,3,2,1],
+        backgroundColor:['rgba(255,77,109,.8)','rgba(255,184,77,.8)','rgba(255,184,77,.6)','rgba(61,255,160,.6)','rgba(61,255,160,.8)'],
+        borderWidth:0}]
+    },
+    options:{responsive:true,maintainAspectRatio:false,cutout:'60%',
+      plugins:{legend:{display:true,position:'right',labels:{color:'#7a90b0',boxWidth:12,font:{size:9},padding:8}},tooltip:{...TIP}}}
+  });
+}
+
+// ─── INTERVENCIONES TAB ───
+function initIntCharts(){
+  new Chart(document.getElementById('cCob2').getContext('2d'),{
+    type:'bar',
+    data:{
+      labels:COB.map(c=>c.nombre),
+      datasets:[
+        {label:'Cobertura actual',data:COB.map(c=>c.val),
+          backgroundColor:COB.map(c=>c.val>=c.meta*.9?'rgba(61,255,160,.7)':c.val>=c.meta*.75?'rgba(255,184,77,.7)':'rgba(255,77,109,.7)'),borderRadius:4},
+        {label:'Meta',data:COB.map(c=>c.meta),
+          backgroundColor:'rgba(0,212,255,.12)',borderColor:'rgba(0,212,255,.4)',borderWidth:1,borderRadius:4}
+      ]
+    },
+    options:{responsive:true,maintainAspectRatio:false,
+      plugins:{legend:{display:true,labels:{color:'#7a90b0',boxWidth:12,font:{size:9}}},tooltip:{...TIP,callbacks:{label:c=>`${c.dataset.label}: ${c.parsed.y}%`}}},
+      scales:{
+        x:{ticks:{font:{size:9},maxRotation:25},grid:{display:false},border:{color:'transparent'}},
+        y:{ticks:{font:{size:9},callback:v=>v+'%'},grid:{color:GRID},border:{color:'transparent'},max:110}
+      }
+    }
+  });
+}
+
+// ─── INDICADORES TAB ───
+function initIndicadores(){
+  const cont=document.getElementById('indicadoresList');
+  INDICADORES.forEach(ind=>{
+    const div=document.createElement('div');
+    div.className='fml-row';
+    div.innerHTML=`
+      <div class="fml-head">
+        <span class="fml-ico">▶</span>
+        <span class="fml-name">${ind.nm}</span>
+        <span class="fml-result ${ind.color}">${ind.resultado}</span>
+      </div>
+      <div class="fml-body">
+        <div style="color:var(--text2);margin-bottom:4px;"><strong>Fórmula:</strong> ${ind.formula}</div>
+        <div style="color:var(--accent);margin-bottom:4px;"><strong>Cálculo:</strong> ${ind.calculo}</div>
+        <div style="color:var(--text2);"><strong>Interpretación:</strong> ${ind.interp}</div>
+      </div>`;
+    div.addEventListener('click',()=>{
+      const body=div.querySelector('.fml-body');
+      const ico=div.querySelector('.fml-ico');
+      const open=body.classList.contains('open');
+      document.querySelectorAll('.fml-body').forEach(b=>b.classList.remove('open'));
+      document.querySelectorAll('.fml-ico').forEach(i=>i.textContent='▶');
+      if(!open){body.classList.add('open');ico.textContent='▼';}
+    });
+    cont.appendChild(div);
+  });
+
+  // Dx vs Tto
+  new Chart(document.getElementById('cDxTto').getContext('2d'),{
+    type:'bar',
+    data:{
+      labels:['Diagnóstico\n(TDR/GG)','Tratamiento\ncompleto','Notificación\n≤48h','Fumigación','Mosquiteros'],
+      datasets:[
+        {label:'Cobertura %',data:[89,76,62,68,52],backgroundColor:['rgba(61,255,160,.7)','rgba(255,184,77,.7)','rgba(255,77,109,.7)','rgba(255,77,109,.7)','rgba(255,77,109,.7)'],borderRadius:4},
+        {label:'Meta %',data:[100,95,90,85,80],backgroundColor:'rgba(0,212,255,.12)',borderColor:'rgba(0,212,255,.4)',borderWidth:1,borderRadius:4}
+      ]
+    },
+    options:{responsive:true,maintainAspectRatio:false,
+      plugins:{legend:{display:true,labels:{color:'#7a90b0',boxWidth:12,font:{size:9}}},tooltip:{...TIP,callbacks:{label:c=>`${c.dataset.label}: ${c.parsed.y}%`}}},
+      scales:{x:{ticks:{font:{size:9}},grid:{display:false},border:{color:'transparent'}},y:{ticks:{font:{size:9},callback:v=>v+'%'},grid:{color:GRID},border:{color:'transparent'},max:110}}
+    }
+  });
+
+  // Donut casos por sector
+  new Chart(document.getElementById('cDonut').getContext('2d'),{
+    type:'doughnut',
+    data:{
+      labels:['Norte (42)','Sur (18)','Oeste (15)','Rural (20)','Este (8)'],
+      datasets:[{data:[42,18,15,20,8],backgroundColor:['rgba(255,77,109,.8)','rgba(255,184,77,.75)','rgba(255,184,77,.6)','rgba(61,255,160,.6)','rgba(61,255,160,.8)'],borderWidth:0}]
+    },
+    options:{responsive:true,maintainAspectRatio:false,cutout:'58%',
+      plugins:{legend:{display:true,position:'right',labels:{color:'#7a90b0',boxWidth:10,font:{size:9},padding:6}},
+        tooltip:{...TIP,callbacks:{label:c=>`${c.label}: ${((c.parsed/103)*100).toFixed(1)}% de casos`}}}}
+  });
+}
+
+// ─── SISTEMATIZACIÓN TAB ───
+function initSist(){
+  const stepsEl=document.getElementById('flowSteps');
+  const detailEl=document.getElementById('flowDetail');
+  FLUJO.forEach((f,i)=>{
+    if(i>0) stepsEl.innerHTML+='<span class="flow-arrow">→</span>';
+    const btn=document.createElement('div');
+    btn.className='flow-step';
+    btn.innerHTML=`<div class="fs-num">${f.num}</div><div class="fs-lbl">${f.lbl}</div>`;
+    btn.addEventListener('click',()=>{
+      const isOn=btn.classList.contains('on');
+      document.querySelectorAll('.flow-step').forEach(s=>s.classList.remove('on'));
+      if(isOn){detailEl.classList.remove('open');detailEl.innerHTML='';}
+      else{
+        btn.classList.add('on');
+        detailEl.innerHTML=`<strong style="color:var(--accent);font-family:var(--mono);font-size:11px;">${f.titulo}</strong><br><br>${f.detalle}`;
+        detailEl.classList.add('open');
+      }
+    });
+    stepsEl.appendChild(btn);
+  });
+}
+</script>
+</body>
+</html>
