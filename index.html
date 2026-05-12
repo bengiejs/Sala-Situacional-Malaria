@@ -288,65 +288,180 @@
 </div>
 
       <!-- Columna derecha (3): tabla de casos semanales -->
-      <div class="md:col-span-3">
-        <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-4 h-full overflow-x-auto">
-          <h3 class="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-3 border-b border-gray-200 dark:border-gray-700 pb-2">
-  📋 Casos por semana epidemiológica
-</h3>
-          <h3 class="font-semibold text-gray-800 dark:text-gray-100 mb-3 text-sm flex items-center gap-1">
-            <span class="w-2 h-2 rounded-full bg-red-500"></span>
-            Casos confirmados por semana
-          </h3>
-          <table class="min-w-full text-xs">
-            <thead class="bg-gray-50 dark:bg-gray-700/50">
-              <tr>
-                <th class="px-2 py-2 text-left font-medium text-gray-600 dark:text-gray-300">Semana epidemiológica</th>
-                <th class="px-2 py-2 text-right font-medium text-gray-600 dark:text-gray-300">Casos confirmados</th>
-              </tr>
-            </thead>
-            <tbody class="divide-y divide-gray-100 dark:divide-gray-700">
-              <tr><td class="px-2 py-1.5 dark:text-gray-300">Semana 1 (Ene)</td><td class="px-2 py-1.5 text-right dark:text-gray-300">12</td></tr>
-              <tr><td class="px-2 py-1.5 dark:text-gray-300">Semana 2 (Ene)</td><td class="px-2 py-1.5 text-right dark:text-gray-300">15</td></tr>
-              <tr><td class="px-2 py-1.5 dark:text-gray-300">Semana 3 (Ene)</td><td class="px-2 py-1.5 text-right dark:text-gray-300">10</td></tr>
-              <tr><td class="px-2 py-1.5 dark:text-gray-300">Semana 4 (Ene)</td><td class="px-2 py-1.5 text-right dark:text-gray-300">14</td></tr>
-              <tr><td class="px-2 py-1.5 dark:text-gray-300">Semana 5 (Feb)</td><td class="px-2 py-1.5 text-right dark:text-gray-300">18</td></tr>
-              <tr><td class="px-2 py-1.5 dark:text-gray-300">Semana 6 (Feb)</td><td class="px-2 py-1.5 text-right dark:text-gray-300">22</td></tr>
-              <tr><td class="px-2 py-1.5 dark:text-gray-300">Semana 7 (Feb)</td><td class="px-2 py-1.5 text-right dark:text-gray-300">28</td></tr>
-              <tr><td class="px-2 py-1.5 dark:text-gray-300">Semana 8 (Feb)</td><td class="px-2 py-1.5 text-right dark:text-gray-300">35</td></tr>
-            </tbody>
-          </table>
-          <div class="mt-3 pt-2 border-t border-gray-100 dark:border-gray-700 text-[11px] text-gray-500 dark:text-gray-400">
-            Umbral de alerta semanal: >20 casos o aumento >30% vs semana anterior.
-          </div>
+<div class="md:col-span-3">
+  <div class="bg-white dark:bg-gray-800 rounded-xl shadow-md border-2 border-gray-300 dark:border-gray-600 p-4 h-full flex flex-col gap-4">
+    
+    <!-- ========== ALERTA DE BROTE ACTIVO ========== -->
+    <div class="bg-red-50 dark:bg-red-950/40 border-l-4 border-red-500 rounded-r-lg p-4">
+      <div class="flex items-start gap-3">
+        <span class="text-red-600 dark:text-red-400 text-xl">⚠️</span>
+        <div class="flex-1">
+          <h4 class="text-sm font-extrabold text-red-700 dark:text-red-300 uppercase tracking-wide">
+            BROTE EN CURSO — SE8
+          </h4>
+          <p class="text-xs text-red-800 dark:text-red-200 mt-1 font-medium">
+            35 casos esta semana <span class="font-bold">(+25% vs SE7)</span>. Umbral superado por 3ª semana consecutiva.
+          </p>
+          <p class="text-xs text-red-700 dark:text-red-300 mt-2">
+            <span class="font-bold">⚠️ Sector Norte en riesgo crítico.</span>
+          </p>
         </div>
       </div>
+    </div>
+
+    <!-- ========== INDICADORES CLAVE (GRID 2x2) ========== -->
+    <div>
+      <h3 class="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide mb-2">Indicadores clave</h3>
+      <div class="grid grid-cols-2 gap-3">
+        <div class="bg-gray-50 dark:bg-gray-700/30 rounded-lg p-2 text-center">
+          <div class="text-xl font-bold text-indigo-600 dark:text-indigo-400">154</div>
+          <div class="text-[10px] text-gray-600 dark:text-gray-300">Casos acumulados</div>
+          <div class="text-[9px] text-gray-400">año actual</div>
+        </div>
+        <div class="bg-gray-50 dark:bg-gray-700/30 rounded-lg p-2 text-center">
+          <div class="text-xl font-bold text-indigo-600 dark:text-indigo-400">3.62</div>
+          <div class="text-[10px] text-gray-600 dark:text-gray-300">Incidencia acum.</div>
+          <div class="text-[9px] text-gray-400">×1,000 hab.</div>
+        </div>
+        <div class="bg-gray-50 dark:bg-gray-700/30 rounded-lg p-2 text-center">
+          <div class="text-xl font-bold text-yellow-600 dark:text-yellow-400">18%</div>
+          <div class="text-[10px] text-gray-600 dark:text-gray-300">Casos importados</div>
+          <div class="text-[9px] text-gray-400">meta: &lt;10%</div>
+        </div>
+        <div class="bg-gray-50 dark:bg-gray-700/30 rounded-lg p-2 text-center">
+          <div class="text-xl font-bold text-green-600 dark:text-green-400">0.3%</div>
+          <div class="text-[10px] text-gray-600 dark:text-gray-300">Letalidad</div>
+          <div class="text-[9px] text-green-600 dark:text-green-400">✓ meta: &lt;0.5%</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ========== COBERTURAS VS METAS (con barras) ========== -->
+    <div>
+  <h3 class="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide mb-2 flex items-center justify-between">
+    Coberturas vs. metas
+    <span class="text-[9px] font-normal text-gray-400">(interactivo)</span>
+  </h3>
+  <div class="space-y-3">
+    <!-- Fumigación intradomiciliaria -->
+    <div>
+      <div class="flex justify-between text-[10px]">
+        <span class="text-gray-600 dark:text-gray-400">Fumigación intradomiciliaria</span>
+        <span class="font-mono text-gray-700 dark:text-gray-300">68% / 85%</span>
+      </div>
+      <div class="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-1.5 mt-0.5">
+        <div class="bg-indigo-500 h-1.5 rounded-full" style="width: 80%"></div>
+      </div>
+    </div>
+    <!-- Distribución mosquiteros -->
+    <div>
+      <div class="flex justify-between text-[10px]">
+        <span class="text-gray-600 dark:text-gray-400">Distribución mosquiteros</span>
+        <span class="font-mono text-gray-700 dark:text-gray-300">52% / 80%</span>
+      </div>
+      <div class="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-1.5 mt-0.5">
+        <div class="bg-indigo-500 h-1.5 rounded-full" style="width: 65%"></div>
+      </div>
+    </div>
+    <!-- Confirmación diagnóstica (TDR) -->
+    <div>
+      <div class="flex justify-between text-[10px]">
+        <span class="text-gray-600 dark:text-gray-400">Confirmación diagnóstica (TDR)</span>
+        <span class="font-mono text-gray-700 dark:text-gray-300">89% / 100%</span>
+      </div>
+      <div class="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-1.5 mt-0.5">
+        <div class="bg-green-500 h-1.5 rounded-full" style="width: 89%"></div>
+      </div>
+    </div>
+    <!-- Tratamiento completo -->
+    <div>
+      <div class="flex justify-between text-[10px]">
+        <span class="text-gray-600 dark:text-gray-400">Tratamiento completo</span>
+        <span class="font-mono text-gray-700 dark:text-gray-300">76% / 95%</span>
+      </div>
+      <div class="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-1.5 mt-0.5">
+        <div class="bg-indigo-500 h-1.5 rounded-full" style="width: 80%"></div>
+      </div>
+    </div>
+    <!-- Notificación ≤48h -->
+    <div>
+      <div class="flex justify-between text-[10px]">
+        <span class="text-gray-600 dark:text-gray-400">Notificación ≤48h</span>
+        <span class="font-mono text-gray-700 dark:text-gray-300">62% / 90%</span>
+      </div>
+      <div class="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-1.5 mt-0.5">
+        <div class="bg-yellow-500 h-1.5 rounded-full" style="width: 69%"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+    <!-- ========== ACCIONES REALIZADAS ========== -->
+    <div>
+      <h3 class="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide mb-2">Acciones realizadas</h3>
+      <div class="space-y-2">
+        <!-- Fumigación -->
+        <div class="flex items-center justify-between text-xs">
+          <span class="text-gray-700 dark:text-gray-300">Fumigación intradomiciliaria ciclo actual completado al 68%</span>
+          <span class="text-green-600 dark:text-green-400 font-bold text-[10px] bg-green-100 dark:bg-green-900/30 px-2 py-0.5 rounded-full">HECHO</span>
+        </div>
+        <!-- Distribución TDR -->
+        <div class="flex items-center justify-between text-xs">
+          <span class="text-gray-700 dark:text-gray-300">Distribución TDR a 16 de 28 comunidades</span>
+          <span class="text-green-600 dark:text-green-400 font-bold text-[10px] bg-green-100 dark:bg-green-900/30 px-2 py-0.5 rounded-full">HECHO</span>
+        </div>
+        <!-- Refuerzo mosquiteros -->
+        <div class="flex items-center justify-between text-xs">
+          <span class="text-gray-700 dark:text-gray-300">Refuerzo mosquiteros zonas rurales (pendiente)</span>
+          <span class="text-yellow-600 dark:text-yellow-400 font-bold text-[10px] bg-yellow-100 dark:bg-yellow-900/30 px-2 py-0.5 rounded-full">PENDIENTE</span>
+        </div>
+        <!-- Capacitación agentes comunitarios -->
+        <div class="flex items-center justify-between text-xs">
+          <span class="text-gray-700 dark:text-gray-300">Capacitación agentes comunitarios SE9</span>
+          <span class="text-yellow-600 dark:text-yellow-400 font-bold text-[10px] bg-yellow-100 dark:bg-yellow-900/30 px-2 py-0.5 rounded-full">PENDIENTE</span>
+        </div>
+        <!-- Reducir tiempo notificación -->
+        <div class="flex items-center justify-between text-xs">
+          <span class="text-gray-700 dark:text-gray-300">Reducir tiempo notificación a ≤48h (actual: 4.2 días)</span>
+          <span class="text-red-600 dark:text-red-400 font-bold text-[10px] bg-red-100 dark:bg-red-900/30 px-2 py-0.5 rounded-full animate-pulse">CRÍTICO</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- ========== INDICADOR SECTOR NORTE (opcional compacto) ========== -->
+    <div class="bg-orange-50 dark:bg-orange-950/30 rounded-lg p-2 text-center border border-orange-200 dark:border-orange-800">
+      <div class="flex items-center justify-center gap-1 text-orange-700 dark:text-orange-300 text-xs">
+        <span>📍</span> Sector Norte: <span class="font-bold">42 casos</span> (últ. 4 sem)
+      </div>
+    </div>
+  </div>
+</div>
     </div>
 
     <div class="mt-8 text-center text-xs text-gray-400 dark:text-gray-500 border-t border-gray-200 dark:border-gray-700 pt-6">
       Sala Situacional - Datos actualizados a la Semana Epidemiológica 8
     </div>
   </main>
+<script>
+  // ==================== MODO OSCURO ====================
+  if (localStorage.getItem('theme') === 'dark' || (!localStorage.getItem('theme') && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+    document.documentElement.classList.add('dark');
+  } else {
+    document.documentElement.classList.remove('dark');
+  }
 
-  <script>
-    // Inicializar modo oscuro desde localStorage
-    if (localStorage.getItem('theme') === 'dark' || (!localStorage.getItem('theme') && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
-      document.documentElement.classList.add('dark');
-    } else {
-      document.documentElement.classList.remove('dark');
-    }
-
-    // Toggle manual
-    const toggleBtn = document.getElementById('darkModeToggle');
+  const toggleBtn = document.getElementById('darkModeToggle');
+  if (toggleBtn) {
     toggleBtn.addEventListener('click', () => {
       document.documentElement.classList.toggle('dark');
       localStorage.setItem('theme', document.documentElement.classList.contains('dark') ? 'dark' : 'light');
-      // Forzar redibujo del gráfico para que las líneas se ajusten al nuevo tema (opcional)
       if (window.casosChart) window.casosChart.resize();
     });
+  }
 
-    // Gráfico
-      document.addEventListener('DOMContentLoaded', function() {
-    // ==================== GRÁFICO DE LÍNEAS ====================
+  // ==================== GRÁFICO Y MAPA ====================
+  document.addEventListener('DOMContentLoaded', function() {
+    // ---------- GRÁFICO ----------
     const canvas = document.getElementById('casosChart');
     if (canvas) {
       const ctx = canvas.getContext('2d');
@@ -398,7 +513,6 @@
         });
       }
       initChart();
-      // Actualizar colores del gráfico al cambiar modo oscuro
       const observerChart = new MutationObserver(() => {
         if (chart) {
           const isDark = document.documentElement.classList.contains('dark');
@@ -409,68 +523,123 @@
       observerChart.observe(document.documentElement, { attributes: true, attributeFilter: ['class'] });
     }
 
-    // ==================== MAPA CON 5 SECTORES ====================
+    // ---------- MAPA CON CÍRCULOS DE INCIDENCIA + CRIADEROS ----------
     if (document.getElementById('map')) {
-      var map = L.map('map').setView([-2.52, -76.52], 9);
+      // Coordenadas de los sectores (centroides)
+      const sectores = [
+        { nombre: "Sector Norte (El Progreso)", lat: -2.505, lng: -76.515, poblacion: 8200, casos: 42, incidencia: 5.12, criaderos: 8, riesgo: "Alto", colorRiesgo: "#dc2626", fillRiesgo: "#ef4444" },
+        { nombre: "Sector Sur (La Palma)", lat: -2.525, lng: -76.525, poblacion: 6500, casos: 18, incidencia: 2.77, criaderos: 3, riesgo: "Medio", colorRiesgo: "#eab308", fillRiesgo: "#facc15" },
+        { nombre: "Sector Este (San Antonio)", lat: -2.515, lng: -76.505, poblacion: 5800, casos: 8, incidencia: 1.38, criaderos: 1, riesgo: "Bajo", colorRiesgo: "#22c55e", fillRiesgo: "#4ade80" },
+        { nombre: "Sector Oeste (Nuevo Horizonte)", lat: -2.510, lng: -76.535, poblacion: 4200, casos: 15, incidencia: 3.57, criaderos: 4, riesgo: "Medio", colorRiesgo: "#eab308", fillRiesgo: "#facc15" },
+        { nombre: "Zona rural dispersa (12 comunidades)", lat: -2.530, lng: -76.510, poblacion: 17800, casos: 20, incidencia: 1.12, criaderos: 2, riesgo: "Bajo", colorRiesgo: "#22c55e", fillRiesgo: "#4ade80" }
+      ];
 
-      // Capa base (cambia según modo oscuro)
+      // Inicializar mapa centrado en el promedio de latitudes y longitudes
+      const centerLat = sectores.reduce((sum, s) => sum + s.lat, 0) / sectores.length;
+      const centerLng = sectores.reduce((sum, s) => sum + s.lng, 0) / sectores.length;
+      var map = L.map('map').setView([centerLat, centerLng], 12);
+
+      // Capa base con soporte de modo oscuro
       function getTileLayer() {
         const isDark = document.documentElement.classList.contains('dark');
-        return L.tileLayer(isDark 
-          ? 'https://{s}.basemaps.cartodron.com/dark_all/{z}/{x}/{y}{r}.png'
-          : 'https://{s}.basemaps.cartodron.com/light_all/{z}/{x}/{y}{r}.png', {
-            attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OSM</a> &copy; CartoDB',
-            subdomains: 'abcd',
-            maxZoom: 12,
-            minZoom: 7
-          });
+        const url = isDark
+          ? 'https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png'
+          : 'https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png';
+        return L.tileLayer(url, {
+          attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OSM</a> &copy; CartoDB',
+          subdomains: 'abcd',
+          maxZoom: 14,
+          minZoom: 7
+        });
       }
       let tileLayer = getTileLayer().addTo(map);
       function updateTileTheme() {
         const isDark = document.documentElement.classList.contains('dark');
-        tileLayer.setUrl(isDark 
-          ? 'https://{s}.basemaps.cartodron.com/dark_all/{z}/{x}/{y}{r}.png'
-          : 'https://{s}.basemaps.cartodron.com/light_all/{z}/{x}/{y}{r}.png');
+        const newUrl = isDark
+          ? 'https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png'
+          : 'https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png';
+        tileLayer.setUrl(newUrl);
       }
       new MutationObserver(() => updateTileTheme()).observe(document.documentElement, { attributes: true, attributeFilter: ['class'] });
 
-      // Datos de los 5 sectores (coordenadas aproximadas para visualizar)
-    const sectores = [
-  { nombre: "Sector Norte (El Progreso)", lat: -2.50, lng: -76.50, poblacion: 8200, casos: 42, incidencia: 5.12, criaderos: 8, riesgo: "Alto", colorRiesgo: "#dc2626", fillRiesgo: "#ef4444" },
-  { nombre: "Sector Sur (La Palma)", lat: -2.55, lng: -76.54, poblacion: 6500, casos: 18, incidencia: 2.77, criaderos: 3, riesgo: "Medio", colorRiesgo: "#eab308", fillRiesgo: "#facc15" },
-  { nombre: "Sector Este (San Antonio)", lat: -2.52, lng: -76.48, poblacion: 5800, casos: 8, incidencia: 1.38, criaderos: 1, riesgo: "Bajo", colorRiesgo: "#22c55e", fillRiesgo: "#4ade80" },
-  { nombre: "Sector Oeste (Nuevo Horizonte)", lat: -2.53, lng: -76.56, poblacion: 4200, casos: 15, incidencia: 3.57, criaderos: 4, riesgo: "Medio", colorRiesgo: "#eab308", fillRiesgo: "#facc15" },
-  { nombre: "Zona rural dispersa (12 comunidades)", lat: -2.54, lng: -76.52, poblacion: 17800, casos: 20, incidencia: 1.12, criaderos: 2, riesgo: "Bajo", colorRiesgo: "#22c55e", fillRiesgo: "#4ade80" }
-];
-map.setView([-2.525, -76.52], 12);  // centro aproximado, zoom más alto
-
-      // Añadir círculos con tamaño proporcional a casos
+      // ========== 1. CÍRCULOS DE INCIDENCIA (tamaño proporcional a casos) ==========
       sectores.forEach(s => {
-        // Radio: escala para que se vea bien (~sqrt(casos)*50)
-        const radius = Math.sqrt(s.casos) * 100;
+        const radius = Math.sqrt(s.casos) * 150;
         const circle = L.circle([s.lat, s.lng], {
           radius: radius,
           color: s.colorRiesgo,
           weight: 2,
           fillColor: s.fillRiesgo,
-          fillOpacity: 0.6
+          fillOpacity: 0.65
         }).addTo(map);
         circle.bindPopup(`
           <b>${s.nombre}</b><br>
           Población: ${s.poblacion.toLocaleString()}<br>
-          Casos (últ. 4 sem): ${s.casos}<br>
-          Incidencia ×1,000: ${s.incidencia}<br>
+   
           Criaderos identificados: ${s.criaderos}<br>
           <span style="color:${s.colorRiesgo}; font-weight:bold;">Rango: ${s.riesgo}</span>
         `);
       });
 
-      // Ajustar vista para que se vean todos los sectores
-      const bounds = L.latLngBounds(sectores.map(s => [s.lat, s.lng]));
-      map.fitBounds(bounds.pad(0.25));
+      // ========== 2. CRIADEROS DE ANOPHELES (puntos realistas) ==========
+      // Generamos coordenadas realistas cerca de cada sector, respetando el número de criaderos por sector
+      const criaderos = [];
+      
+      // Sector Norte (8 criaderos)
+      criaderos.push({ lat: -2.502, lng: -76.518, nombre: "Criadero Quebrada Honda", tipo: "permanente", sector: "Norte" });
+      criaderos.push({ lat: -2.508, lng: -76.512, nombre: "Criadero Laguna El Progreso", tipo: "temporal", sector: "Norte" });
+      criaderos.push({ lat: -2.504, lng: -76.520, nombre: "Criadero Zona Bananera", tipo: "artificial", sector: "Norte" });
+      criaderos.push({ lat: -2.501, lng: -76.514, nombre: "Criadero Río Chico", tipo: "permanente", sector: "Norte" });
+      criaderos.push({ lat: -2.509, lng: -76.516, nombre: "Criadero Estanque El Triunfo", tipo: "artificial", sector: "Norte" });
+      criaderos.push({ lat: -2.506, lng: -76.511, nombre: "Criadero Pantano La Esperanza", tipo: "temporal", sector: "Norte" });
+      criaderos.push({ lat: -2.503, lng: -76.517, nombre: "Criadero Zona de Riego", tipo: "artificial", sector: "Norte" });
+      criaderos.push({ lat: -2.507, lng: -76.519, nombre: "Criadero Charco Los Mangos", tipo: "temporal", sector: "Norte" });
+      
+      // Sector Sur (3 criaderos)
+      criaderos.push({ lat: -2.522, lng: -76.527, nombre: "Criadero Laguna La Palma", tipo: "permanente", sector: "Sur" });
+      criaderos.push({ lat: -2.527, lng: -76.523, nombre: "Criadero Arroyo Seco", tipo: "temporal", sector: "Sur" });
+      criaderos.push({ lat: -2.523, lng: -76.529, nombre: "Criadero Reservorio Los Andes", tipo: "artificial", sector: "Sur" });
+      
+      // Sector Este (1 criadero)
+      criaderos.push({ lat: -2.515, lng: -76.508, nombre: "Criadero San Antonio", tipo: "permanente", sector: "Este" });
+      
+      // Sector Oeste (4 criaderos)
+      criaderos.push({ lat: -2.512, lng: -76.532, nombre: "Criadero Nuevo Horizonte", tipo: "artificial", sector: "Oeste" });
+      criaderos.push({ lat: -2.508, lng: -76.537, nombre: "Criadero Zona Industrial", tipo: "artificial", sector: "Oeste" });
+      criaderos.push({ lat: -2.514, lng: -76.534, nombre: "Criadero Estancamiento Vía", tipo: "temporal", sector: "Oeste" });
+      criaderos.push({ lat: -2.511, lng: -76.530, nombre: "Criadero Tanques Agrícolas", tipo: "artificial", sector: "Oeste" });
+      
+      // Zona rural (2 criaderos)
+      criaderos.push({ lat: -2.528, lng: -76.514, nombre: "Criadero Comunidad San Miguel", tipo: "permanente", sector: "Rural" });
+      criaderos.push({ lat: -2.533, lng: -76.512, nombre: "Criadero Poza El Descanso", tipo: "temporal", sector: "Rural" });
+
+      // Agregar marcadores de criaderos (círculos pequeños de color cian/naranja según riesgo)
+      criaderos.forEach(c => {
+        // Color cian para criaderos en general, naranja para zonas de alto riesgo (opcional)
+        const markerColor = '#06b6d4'; // cian por defecto
+        const markerBorder = '#0891b2';
+        const radius = 5;
+        const criaderoCircle = L.circleMarker([c.lat, c.lng], {
+          radius: radius,
+          fillColor: markerColor,
+          color: markerBorder,
+          weight: 1,
+          fillOpacity: 0.9
+        }).addTo(map);
+        criaderoCircle.bindPopup(`
+          <b>🦟 Criadero de Anopheles</b><br>
+          <b>Nombre:</b> ${c.nombre}<br>
+          <b>Tipo:</b> ${c.tipo}<br>
+          <b>Sector:</b> ${c.sector}<br>
+          <span class="text-xs text-gray-500">Coordenadas: ${c.lat}, ${c.lng}</span>
+        `);
+      });
+
+      // Ajustar vista para que se vean todos los círculos de incidencia y criaderos
+      const allBounds = L.latLngBounds(sectores.map(s => [s.lat, s.lng]).concat(criaderos.map(c => [c.lat, c.lng])));
+      map.fitBounds(allBounds.pad(0.15));
     }
   });
-
 </script>
 </body>
 </html>
